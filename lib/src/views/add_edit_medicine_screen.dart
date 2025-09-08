@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:dose_reminder/src/models/dose.dart';
 import 'package:dose_reminder/src/models/medicine.dart';
 import 'package:dose_reminder/src/services/database_service.dart';
 import 'package:dose_reminder/src/services/notification_service.dart';
@@ -31,27 +32,37 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
               if (_formKey.currentState!.validate()) {
                 _formKey.currentState!.save();
 
-                final newMedicine = Medicine(
-                  // ... (medicine properties)
-                );
-
-                // Save to DB
                 final dbService = ref.read(databaseServiceProvider);
-                await dbService.addMedicine(newMedicine);
-
-                // Schedule Notifications
                 final schedulingService = ref.read(schedulingServiceProvider);
                 final notificationService = ref.read(notificationServiceProvider);
-                final doses = schedulingService.generateDoses(newMedicine);
 
-                for (var dose in doses) {
-                  // Use a unique ID for each notification
-                  final notificationId = dose.scheduledTime.millisecondsSinceEpoch.remainder(100000);
-                  await notificationService.scheduleDoseNotification(
-                    notificationId,
-                    newMedicine.name,
-                    dose.scheduledTime,
-                  );
+                // 1. Create medicine object without doses
+                final newMedicine = Medicine(
+                  // ... (properties from form state)
+                );
+
+                // 2. Save to DB to get a key
+                final medicineKey = await dbService.addMedicine(newMedicine);
+
+                // 3. Get the managed instance from Hive
+                final managedMedicine = await dbService.getMedicine(medicineKey);
+
+                if (managedMedicine != null) {
+                  // 4. Generate doses and add them to the HiveList
+                  final doses = schedulingService.generateDoses(managedMedicine);
+                  managedMedicine.doseHistory?.addAll(doses);
+                  await managedMedicine.save();
+
+                  // 5. Schedule notifications
+                  for (var dose in managedMedicine.doseHistory!) {
+                    final notificationId = dose.scheduledTime.millisecondsSinceEpoch.remainder(100000);
+                    await notificationService.scheduleDoseNotification(
+                      notificationId,
+                      managedMedicine.name,
+                      medicineKey, // Pass the key
+                      dose.scheduledTime,
+                    );
+                  }
                 }
 
                 if (mounted) Navigator.of(context).pop();

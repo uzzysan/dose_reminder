@@ -1,5 +1,5 @@
+import 'package:dose_reminder/src/models/dose.dart';
 import 'package:dose_reminder/src/models/medicine.dart';
-import 'package:dose_reminder/src/services/scheduling_service.dart';
 import 'package:dose_reminder/src/views/medicine_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,12 +11,21 @@ class MedicineCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final schedule = ref.read(schedulingServiceProvider).generateDoses(medicine);
+    final schedule = medicine.doseHistory ?? [];
+    final dosesLeft = schedule.where((d) => d.status == DoseStatus.pending).length;
     final totalDoses = schedule.length;
+
+    // Find the next dose
+    Dose? nextDose;
+    try {
+      nextDose = schedule.firstWhere((d) => d.status == DoseStatus.pending);
+    } catch (e) {
+      nextDose = null; // No pending doses
+    }
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      clipBehavior: Clip.antiAlias, // Ensures the InkWell ripple is contained
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () {
           Navigator.of(context).push(
@@ -30,15 +39,15 @@ class MedicineCard extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                medicine.name,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
+              Text(medicine.name, style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 8),
-              Text('Total doses: $totalDoses'),
+              Text('Doses left: $dosesLeft of $totalDoses'),
               const SizedBox(height: 4),
-              // Placeholder for next dose time, which requires more complex state
-              const Text('Next dose: ...'), 
+              if (nextDose != null)
+                // This is a placeholder for a countdown timer widget
+                Text('Next dose: ${nextDose.scheduledTime.toString()}')
+              else
+                const Text('All doses taken!'),
             ],
           ),
         ),

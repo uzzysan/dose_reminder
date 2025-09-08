@@ -15,13 +15,13 @@ class Medicine extends HiveObject {
   FrequencyType frequencyType;
 
   @HiveField(3)
-  int? timesPerDay; // For daily frequency
+  int? timesPerDay;
 
   @HiveField(4)
-  int? everyXDays; // For every X days frequency
+  int? everyXDays;
 
   @HiveField(5)
-  List<int>? weeklyFrequency; // For weekly, e.g., [1, 3, 5] for Mon, Wed, Fri
+  List<int>? weeklyFrequency;
 
   @HiveField(6)
   int durationInDays;
@@ -30,10 +30,10 @@ class Medicine extends HiveObject {
   DateTime startDateTime;
 
   @HiveField(8)
-  int preferredStartHour; // e.g., 7 for 7am
+  int preferredStartHour;
 
   @HiveField(9)
-  int preferredEndHour; // e.g., 21 for 9pm
+  int preferredEndHour;
 
   @HiveField(10)
   HiveList<Dose>? doseHistory;
@@ -49,6 +49,7 @@ class Medicine extends HiveObject {
     required this.startDateTime,
     this.preferredStartHour = 7,
     this.preferredEndHour = 21,
+    // doseHistory is now managed by Hive, not set in constructor
   });
 }
 
