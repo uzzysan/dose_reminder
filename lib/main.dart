@@ -6,7 +6,7 @@ import 'package:dose_reminder/src/views/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:dose_reminder/src/l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:dose_reminder/src/views/splash_screen.dart';
 
@@ -46,8 +46,10 @@ class MyApp extends ConsumerWidget {
         dialogBackgroundColor: const Color.fromARGB(128, 160, 202, 247),
       ),
       darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple,
-            brightness: Brightness.dark),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.deepPurple,
+          brightness: Brightness.dark,
+        ),
         useMaterial3: true,
         cardColor: const Color.fromARGB(128, 19, 46, 73),
         scaffoldBackgroundColor: const Color.fromARGB(128, 19, 46, 73),
@@ -55,7 +57,7 @@ class MyApp extends ConsumerWidget {
         dialogBackgroundColor: const Color.fromARGB(128, 19, 46, 73),
       ),
       themeMode: themeMode,
-      localizationsDelegates: const [
+      localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,

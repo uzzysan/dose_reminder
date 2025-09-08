@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // This provider will be responsible for managing the theme state.
-final themeNotifierProvider = StateNotifierProvider<ThemeNotifier, ThemeMode>((ref) {
+final themeNotifierProvider = StateNotifierProvider<ThemeNotifier, ThemeMode>((
+  ref,
+) {
   final settingsService = ref.watch(settingsServiceProvider);
   return ThemeNotifier(settingsService);
 });
@@ -29,7 +31,9 @@ class ThemeNotifier extends StateNotifier<ThemeMode> {
   }
 }
 
-final localeNotifierProvider = StateNotifierProvider<LocaleNotifier, Locale?>((ref) {
+final localeNotifierProvider = StateNotifierProvider<LocaleNotifier, Locale?>((
+  ref,
+) {
   final settingsService = ref.watch(settingsServiceProvider);
   return LocaleNotifier(settingsService);
 });
@@ -48,7 +52,7 @@ class LocaleNotifier extends StateNotifier<Locale?> {
   Future<void> setLocale(Locale? locale) async {
     if (state == locale) return;
     state = locale;
-    // Save null if locale is null, otherwise save languageCode
+    // Pass locale directly, SettingsService will handle null
     await _settingsService.setLocale(locale);
   }
 }
