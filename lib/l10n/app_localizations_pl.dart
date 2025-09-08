@@ -58,7 +58,7 @@ class AppLocalizationsPl extends AppLocalizations {
   String get settings => 'Ustawienia';
 
   @override
-  String get theme => 'Theme';
+  String get theme => 'Motyw';
 
   @override
   String get language => 'Język';
@@ -97,4 +97,81 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get snooze => 'Drzemka (30 min)';
+
+  @override
+  String get selectImageSource => 'Wybierz źródło obrazu';
+
+  @override
+  String get camera => 'Aparat';
+
+  @override
+  String get gallery => 'Galeria';
+
+  @override
+  String get mon => 'Pon';
+
+  @override
+  String get tue => 'Wt';
+
+  @override
+  String get wed => 'Śr';
+
+  @override
+  String get thu => 'Czw';
+
+  @override
+  String get fri => 'Pt';
+
+  @override
+  String get sat => 'Sob';
+
+  @override
+  String get sun => 'Nd';
+
+  @override
+  String get pleaseEnterHowManyTimesPerDay => 'Proszę podać ile razy dziennie';
+
+  @override
+  String get invalidNumber => 'Nieprawidłowy numer';
+
+  @override
+  String get pleaseEnterTheIntervalInDays => 'Proszę podać interwał w dniach';
+
+  @override
+  String get pleaseEnterAMedicineName => 'Proszę podać nazwę leku';
+
+  @override
+  String get pleaseSelectAFrequency => 'Proszę wybrać częstotliwość';
+
+  @override
+  String get pleaseEnterTheDuration => 'Proszę podać czas trwania';
+
+  @override
+  String get pleaseEnterAValidNumberOfDays =>
+      'Proszę podać prawidłową liczbę dni';
+
+  @override
+  String get noScheduleFoundForThisMedicine =>
+      'Nie znaleziono harmonogramu dla tego leku.';
+
+  @override
+  String get todayDoses => 'Dzisiejsze Dawki';
+
+  @override
+  String get noDosesScheduledForToday => 'Brak dawek zaplanowanych na dziś.';
+
+  @override
+  String get doseHistory => 'Historia Dawek';
+
+  @override
+  String get noDoseHistory => 'Brak historii dawek.';
+
+  @override
+  String get weeklyFrequency => 'Częstotliwość Tygodniowa';
+
+  @override
+  String get days => 'dni';
+
+  @override
+  String get duration => 'Czas trwania';
 }

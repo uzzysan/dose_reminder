@@ -6,7 +6,7 @@ import 'package:dose_reminder/src/views/settings_screen.dart';
 import 'package:dose_reminder/src/widgets/medicine_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:dose_reminder/l10n/app_localizations.dart';
 
 final medicinesProvider = FutureProvider<List<Medicine>>((ref) {
   final dbService = ref.watch(databaseServiceProvider);

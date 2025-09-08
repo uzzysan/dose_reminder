@@ -2,21 +2,36 @@ import 'package:dose_reminder/src/models/dose.dart';
 import 'package:dose_reminder/src/models/medicine.dart';
 import 'package:dose_reminder/src/providers/settings_provider.dart';
 import 'package:dose_reminder/src/services/notification_service.dart';
-import 'package:dose_reminder/src/views/home_screen.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:dose_reminder/src/l10n/app_localizations.dart';
+import 'package:dose_reminder/l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:dose_reminder/src/views/splash_screen.dart';
+import 'dart:developer' as developer;
 
 Future<void> main() async {
   // Ensure flutter is initialized
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Create a ProviderContainer
+  final container = ProviderContainer();
+
   // Initialize services
-  await NotificationService().init();
-  await Hive.initFlutter();
+  try {
+    await container.read(notificationServiceProvider).init();
+    developer.log('NotificationService initialized successfully');
+  } catch (e) {
+    developer.log('Error initializing NotificationService: $e');
+  }
+
+  try {
+    await Hive.initFlutter();
+    developer.log('Hive initialized successfully');
+  } catch (e) {
+    developer.log('Error initializing Hive: $e');
+  }
 
   // Register Adapters
   Hive.registerAdapter(MedicineAdapter());
@@ -24,7 +39,22 @@ Future<void> main() async {
   Hive.registerAdapter(DoseAdapter());
   Hive.registerAdapter(DoseStatusAdapter());
 
-  runApp(const ProviderScope(child: MyApp()));
+  // Open boxes
+  try {
+    await Hive.openBox<Medicine>('medicines');
+    developer.log('Medicine box opened successfully');
+    await Hive.openBox<Dose>('doses');
+    developer.log('Dose box opened successfully');
+  } catch (e) {
+    developer.log('Error opening Hive boxes: $e');
+  }
+
+  runApp(
+    UncontrolledProviderScope(
+      container: container,
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends ConsumerWidget {
@@ -43,7 +73,7 @@ class MyApp extends ConsumerWidget {
         cardColor: const Color.fromARGB(128, 160, 202, 247),
         scaffoldBackgroundColor: const Color.fromARGB(128, 160, 202, 247),
         canvasColor: const Color.fromARGB(128, 160, 202, 247),
-        dialogBackgroundColor: const Color.fromARGB(128, 160, 202, 247),
+        dialogTheme: null,
       ),
       darkTheme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
@@ -54,7 +84,7 @@ class MyApp extends ConsumerWidget {
         cardColor: const Color.fromARGB(128, 19, 46, 73),
         scaffoldBackgroundColor: const Color.fromARGB(128, 19, 46, 73),
         canvasColor: const Color.fromARGB(128, 19, 46, 73),
-        dialogBackgroundColor: const Color.fromARGB(128, 19, 46, 73),
+        dialogTheme: null,
       ),
       themeMode: themeMode,
       localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
@@ -67,7 +97,7 @@ class MyApp extends ConsumerWidget {
         Locale('en', ''), // English
         Locale('pl', ''), // Polish
       ],
-      locale: locale, // Set the locale from the provider
+      locale: locale ?? const Locale('en', ''), // Set the locale from the provider, default to English if null
       home: const SplashScreen(),
     );
   }

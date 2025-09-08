@@ -271,6 +271,156 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Snooze (30 min)'**
   String get snooze;
+
+  /// No description provided for @selectImageSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Image Source'**
+  String get selectImageSource;
+
+  /// No description provided for @camera.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera'**
+  String get camera;
+
+  /// No description provided for @gallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Gallery'**
+  String get gallery;
+
+  /// No description provided for @mon.
+  ///
+  /// In en, this message translates to:
+  /// **'Mon'**
+  String get mon;
+
+  /// No description provided for @tue.
+  ///
+  /// In en, this message translates to:
+  /// **'Tue'**
+  String get tue;
+
+  /// No description provided for @wed.
+  ///
+  /// In en, this message translates to:
+  /// **'Wed'**
+  String get wed;
+
+  /// No description provided for @thu.
+  ///
+  /// In en, this message translates to:
+  /// **'Thu'**
+  String get thu;
+
+  /// No description provided for @fri.
+  ///
+  /// In en, this message translates to:
+  /// **'Fri'**
+  String get fri;
+
+  /// No description provided for @sat.
+  ///
+  /// In en, this message translates to:
+  /// **'Sat'**
+  String get sat;
+
+  /// No description provided for @sun.
+  ///
+  /// In en, this message translates to:
+  /// **'Sun'**
+  String get sun;
+
+  /// No description provided for @pleaseEnterHowManyTimesPerDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter how many times per day'**
+  String get pleaseEnterHowManyTimesPerDay;
+
+  /// No description provided for @invalidNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid number'**
+  String get invalidNumber;
+
+  /// No description provided for @pleaseEnterTheIntervalInDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter the interval in days'**
+  String get pleaseEnterTheIntervalInDays;
+
+  /// No description provided for @pleaseEnterAMedicineName.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a medicine name'**
+  String get pleaseEnterAMedicineName;
+
+  /// No description provided for @pleaseSelectAFrequency.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a frequency'**
+  String get pleaseSelectAFrequency;
+
+  /// No description provided for @pleaseEnterTheDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter the duration'**
+  String get pleaseEnterTheDuration;
+
+  /// No description provided for @pleaseEnterAValidNumberOfDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid number of days'**
+  String get pleaseEnterAValidNumberOfDays;
+
+  /// No description provided for @noScheduleFoundForThisMedicine.
+  ///
+  /// In en, this message translates to:
+  /// **'No schedule found for this medicine.'**
+  String get noScheduleFoundForThisMedicine;
+
+  /// No description provided for @todayDoses.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s Doses'**
+  String get todayDoses;
+
+  /// No description provided for @noDosesScheduledForToday.
+  ///
+  /// In en, this message translates to:
+  /// **'No doses scheduled for today.'**
+  String get noDosesScheduledForToday;
+
+  /// No description provided for @doseHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Dose History'**
+  String get doseHistory;
+
+  /// No description provided for @noDoseHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'No dose history available.'**
+  String get noDoseHistory;
+
+  /// No description provided for @weeklyFrequency.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly Frequency'**
+  String get weeklyFrequency;
+
+  /// No description provided for @days.
+  ///
+  /// In en, this message translates to:
+  /// **'days'**
+  String get days;
+
+  /// No description provided for @duration.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration'**
+  String get duration;
 }
 
 class _AppLocalizationsDelegate

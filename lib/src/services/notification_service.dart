@@ -107,9 +107,9 @@ class NotificationService {
       'It\'s time to take your $medicineName.',
       tz.TZDateTime.from(scheduledTime, tz.local),
       platformChannelSpecifics,
-      androidAllowWhileIdle: true,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
       payload: payload,
+      matchDateTimeComponents: null,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );
   }
 }

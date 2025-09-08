@@ -31,8 +31,12 @@ class SettingsService {
     return Locale(localeString);
   }
 
-  Future<void> setLocale(Locale locale) async {
+  Future<void> setLocale(Locale? locale) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_localeKey, locale.languageCode);
+    if (locale == null) {
+      await prefs.remove(_localeKey);
+    } else {
+      await prefs.setString(_localeKey, locale.languageCode);
+    }
   }
 }

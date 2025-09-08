@@ -1,6 +1,6 @@
 import 'package:dose_reminder/src/models/dose.dart';
 import 'package:dose_reminder/src/models/medicine.dart';
-import 'package:flutter/material.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final schedulingServiceProvider = Provider<SchedulingService>((ref) {

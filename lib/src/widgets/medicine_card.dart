@@ -3,7 +3,7 @@ import 'package:dose_reminder/src/models/medicine.dart';
 import 'package:dose_reminder/src/views/medicine_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:dose_reminder/l10n/app_localizations.dart';
 
 class MedicineCard extends ConsumerWidget {
   const MedicineCard({super.key, required this.medicine});
@@ -43,7 +43,7 @@ class MedicineCard extends ConsumerWidget {
             children: [
               Text(medicine.name, style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 8),
-              Text('${l10n.dosesLeft}: $dosesLeft ${l10n.of} $totalDoses'),
+              Text('${l10n.dosesLeft}: $dosesLeft ${l10n.ofWord} $totalDoses'),
               const SizedBox(height: 4),
               if (nextDose != null)
                 // This is a placeholder for a countdown timer widget

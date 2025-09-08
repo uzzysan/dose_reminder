@@ -3,7 +3,7 @@ import 'package:dose_reminder/src/models/medicine.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:dose_reminder/l10n/app_localizations.dart';
 
 class MedicineDetailsScreen extends ConsumerWidget {
   const MedicineDetailsScreen({super.key, required this.medicine});

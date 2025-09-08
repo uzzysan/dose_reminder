@@ -97,4 +97,83 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get snooze => 'Snooze (30 min)';
+
+  @override
+  String get selectImageSource => 'Select Image Source';
+
+  @override
+  String get camera => 'Camera';
+
+  @override
+  String get gallery => 'Gallery';
+
+  @override
+  String get mon => 'Mon';
+
+  @override
+  String get tue => 'Tue';
+
+  @override
+  String get wed => 'Wed';
+
+  @override
+  String get thu => 'Thu';
+
+  @override
+  String get fri => 'Fri';
+
+  @override
+  String get sat => 'Sat';
+
+  @override
+  String get sun => 'Sun';
+
+  @override
+  String get pleaseEnterHowManyTimesPerDay =>
+      'Please enter how many times per day';
+
+  @override
+  String get invalidNumber => 'Invalid number';
+
+  @override
+  String get pleaseEnterTheIntervalInDays =>
+      'Please enter the interval in days';
+
+  @override
+  String get pleaseEnterAMedicineName => 'Please enter a medicine name';
+
+  @override
+  String get pleaseSelectAFrequency => 'Please select a frequency';
+
+  @override
+  String get pleaseEnterTheDuration => 'Please enter the duration';
+
+  @override
+  String get pleaseEnterAValidNumberOfDays =>
+      'Please enter a valid number of days';
+
+  @override
+  String get noScheduleFoundForThisMedicine =>
+      'No schedule found for this medicine.';
+
+  @override
+  String get todayDoses => 'Today\'s Doses';
+
+  @override
+  String get noDosesScheduledForToday => 'No doses scheduled for today.';
+
+  @override
+  String get doseHistory => 'Dose History';
+
+  @override
+  String get noDoseHistory => 'No dose history available.';
+
+  @override
+  String get weeklyFrequency => 'Weekly Frequency';
+
+  @override
+  String get days => 'days';
+
+  @override
+  String get duration => 'Duration';
 }
