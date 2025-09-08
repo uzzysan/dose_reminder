@@ -3,6 +3,7 @@ import 'package:dose_reminder/src/models/medicine.dart';
 import 'package:dose_reminder/src/views/medicine_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class MedicineCard extends ConsumerWidget {
   const MedicineCard({super.key, required this.medicine});
@@ -14,6 +15,7 @@ class MedicineCard extends ConsumerWidget {
     final schedule = medicine.doseHistory ?? [];
     final dosesLeft = schedule.where((d) => d.status == DoseStatus.pending).length;
     final totalDoses = schedule.length;
+    final l10n = AppLocalizations.of(context)!;
 
     // Find the next dose
     Dose? nextDose;
@@ -41,13 +43,13 @@ class MedicineCard extends ConsumerWidget {
             children: [
               Text(medicine.name, style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 8),
-              Text('Doses left: $dosesLeft of $totalDoses'),
+              Text('${l10n.dosesLeft}: $dosesLeft ${l10n.of} $totalDoses'),
               const SizedBox(height: 4),
               if (nextDose != null)
                 // This is a placeholder for a countdown timer widget
-                Text('Next dose: ${nextDose.scheduledTime.toString()}')
+                Text('${l10n.nextDose}: ${nextDose.scheduledTime.toString()}')
               else
-                const Text('All doses taken!'),
+                Text(l10n.allDosesTaken),
             ],
           ),
         ),

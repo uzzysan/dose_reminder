@@ -1,11 +1,12 @@
 import 'package:dose_reminder/src/models/medicine.dart';
 import 'package:dose_reminder/src/services/database_service.dart';
 import 'package:dose_reminder/src/views/add_edit_medicine_screen.dart';
+import 'package:dose_reminder/src/views/settings_screen.dart';
 import 'package:dose_reminder/src/widgets/medicine_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-// Provider to fetch the list of medicines from the database
 final medicinesProvider = FutureProvider<List<Medicine>>((ref) {
   final dbService = ref.watch(databaseServiceProvider);
   return dbService.getMedicines();
@@ -17,17 +18,28 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final medicinesAsyncValue = ref.watch(medicinesProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Your Medicines'),
+        title: Text(l10n.yourMedicines),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+              );
+            },
+          ),
+        ],
       ),
       body: medicinesAsyncValue.when(
         data: (medicines) {
           if (medicines.isEmpty) {
-            return const Center(
-              child: Text('No medicines added yet. Press \'+\' to add one!'),
+            return Center(
+              child: Text(l10n.noMedicinesAdded),
             );
           }
           return ListView.builder(
@@ -42,14 +54,12 @@ class HomeScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          // Navigate and wait for a result. If the user saved a new medicine,
-          // the form will pop. We then invalidate the provider to refresh the list.
           await Navigator.of(context).push(
             MaterialPageRoute(builder: (context) => const AddEditMedicineScreen()),
           );
           ref.invalidate(medicinesProvider);
         },
-        tooltip: 'Add Medicine',
+        tooltip: l10n.addMedicine,
         child: const Icon(Icons.add),
       ),
     );

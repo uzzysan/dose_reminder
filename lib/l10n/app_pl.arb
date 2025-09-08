@@ -1,0 +1,36 @@
+{
+    "@@locale": "pl",
+    "appTitle": "Przypominacz Dawek",
+    "yourMedicines": "Twoje Leki",
+    "addMedicine": "Dodaj Lek",
+    "noMedicinesAdded": "Nie dodano jeszcze leków. Naciśnij '+' aby dodać!",
+    "medicineName": "Nazwa leku",
+    "frequency": "Częstotliwość",
+    "timesPerDay": "Razy dziennie",
+    "everyXDays": "Co X dni",
+    "durationInDays": "Czas trwania (w dniach)",
+    "startDate": "Data rozpoczęcia",
+    "startTime": "Godzina rozpoczęcia",
+    "preferredHours": "Preferowane godziny",
+    "systemDefault": "Domyślny systemowy",
+    "light": "Jasny",
+    "dark": "Ciemny",
+    "settings": "Ustawienia",
+    "language": "Język",
+    "english": "Angielski",
+    "polish": "Polski",
+    "dose": "Dawka",
+    "totalDoses": "Wszystkie dawki",
+    "dosesLeft": "Pozostałe dawki",
+    "nextDose": "Następna dawka",
+    "allDosesTaken": "Wszystkie dawki przyjęte!",
+    "timeForYourDose": "Czas na dawkę!",
+    "itsTimeToTakeYour": "Czas na przyjęcie leku {medicineName}.",
+    "@itsTimeToTakeYour": {
+        "placeholders": {
+            "medicineName": {}
+        }
+    },
+    "taken": "Przyjęto",
+    "snooze": "Drzemka (30 min)"
+}

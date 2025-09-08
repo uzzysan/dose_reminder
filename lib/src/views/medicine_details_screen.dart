@@ -3,6 +3,7 @@ import 'package:dose_reminder/src/models/medicine.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class MedicineDetailsScreen extends ConsumerWidget {
   const MedicineDetailsScreen({super.key, required this.medicine});
@@ -11,15 +12,15 @@ class MedicineDetailsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // The schedule is now read directly from the saved medicine object.
     final List<Dose> schedule = medicine.doseHistory ?? [];
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(medicine.name),
       ),
       body: schedule.isEmpty
-          ? const Center(child: Text('No schedule found for this medicine.'))
+          ? Center(child: Text(l10n.noScheduleFoundForThisMedicine))
           : ListView.builder(
               itemCount: schedule.length,
               itemBuilder: (context, index) {
@@ -27,7 +28,7 @@ class MedicineDetailsScreen extends ConsumerWidget {
                 final formattedDate = DateFormat.yMMMd().add_jm().format(dose.scheduledTime);
                 
                 return ListTile(
-                  leading: Text('Dose ${index + 1}'),
+                  leading: Text('${l10n.dose} ${index + 1}'),
                   title: Text(formattedDate),
                   trailing: Icon(
                     dose.status == DoseStatus.pending ? Icons.radio_button_unchecked :

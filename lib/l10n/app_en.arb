@@ -1,0 +1,37 @@
+{
+    "@@locale": "en",
+    "appTitle": "Dose Reminder",
+    "yourMedicines": "Your Medicines",
+    "addMedicine": "Add Medicine",
+    "noMedicinesAdded": "No medicines added yet. Press '+' to add one!",
+    "medicineName": "Medicine Name",
+    "frequency": "Frequency",
+    "timesPerDay": "Times per day",
+    "everyXDays": "Every X days",
+    "durationInDays": "Duration (in days)",
+    "startDate": "Start Date",
+    "startTime": "Start Time",
+    "preferredHours": "Preferred hours",
+    "systemDefault": "System Default",
+    "light": "Light",
+    "dark": "Dark",
+    "settings": "Settings",
+    "theme": "Theme",
+    "language": "Language",
+    "english": "English",
+    "polish": "Polish",
+    "dose": "Dose",
+    "totalDoses": "Total doses",
+    "dosesLeft": "Doses left",
+    "nextDose": "Next dose",
+    "allDosesTaken": "All doses taken!",
+    "timeForYourDose": "Time for your dose!",
+    "itsTimeToTakeYour": "It's time to take your {medicineName}.",
+    "@itsTimeToTakeYour": {
+        "placeholders": {
+            "medicineName": {}
+        }
+    },
+    "taken": "Taken",
+    "snooze": "Snooze (30 min)"
+}
