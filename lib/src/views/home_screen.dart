@@ -50,10 +50,13 @@ class HomeScreen extends ConsumerWidget {
             child: Container(
               color: backgroundColor,
               child: Center(
-                child: Image.asset(
-                  logoAsset,
-                  fit: BoxFit.contain,
-                  width: MediaQuery.of(context).size.width * 0.6,
+                child: Opacity(
+                  opacity: 0.06, // Very subtle background logo
+                  child: Image.asset(
+                    logoAsset,
+                    fit: BoxFit.contain,
+                    width: MediaQuery.of(context).size.width * 0.8,
+                  ),
                 ),
               ),
             ),
@@ -66,8 +69,9 @@ class HomeScreen extends ConsumerWidget {
                   child: Text(l10n.noMedicinesAdded),
                 );
               }
-              return ListView.builder(
+              return ListView.separated(
                 itemCount: medicines.length,
+                separatorBuilder: (context, index) => const SizedBox(height: 16),
                 itemBuilder: (context, index) {
                   return MedicineCard(medicine: medicines[index]);
                 },

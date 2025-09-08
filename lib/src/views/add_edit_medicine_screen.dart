@@ -160,7 +160,7 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
             }
             return null;
           },
-          onSaved: (value) => _timesPerDay = int.tryParse(value!),
+          onSaved: (value) => _timesPerDay = int.tryParse(value ?? ''),
         );
       case FrequencyType.everyXDays:
         return TextFormField(
@@ -176,7 +176,7 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
             }
             return null;
           },
-          onSaved: (value) => _everyXDays = int.tryParse(value!),
+          onSaved: (value) => _everyXDays = int.tryParse(value ?? ''),
         );
       case FrequencyType.weekly:
         return _buildWeeklyDayPicker();
@@ -238,17 +238,20 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
                   await managedMedicine.save();
 
                   // 5. Schedule notifications
-                  for (var dose in managedMedicine.doseHistory!) {
-                    final notificationId = dose
-                        .scheduledTime
-                        .millisecondsSinceEpoch
-                        .remainder(100000);
-                    await notificationService.scheduleDoseNotification(
-                      notificationId,
-                      managedMedicine.name,
-                      medicineKey, // Pass the key
-                      dose.scheduledTime,
-                    );
+                  final doseHistory = managedMedicine.doseHistory;
+                  if (doseHistory != null) {
+                    for (var dose in doseHistory) {
+                      final notificationId = dose
+                          .scheduledTime
+                          .millisecondsSinceEpoch
+                          .remainder(100000);
+                      await notificationService.scheduleDoseNotification(
+                        notificationId,
+                        managedMedicine.name,
+                        medicineKey, // Pass the key
+                        dose.scheduledTime,
+                      );
+                    }
                   }
                 }
 
@@ -296,7 +299,7 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
                   }
                   return null;
                 },
-                onSaved: (value) => _name = value!,
+                onSaved: (value) => _name = value ?? '',
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<FrequencyType>(
@@ -338,7 +341,7 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
                   }
                   return null;
                 },
-                onSaved: (value) => _durationInDays = int.tryParse(value!),
+                onSaved: (value) => _durationInDays = int.tryParse(value ?? ''),
               ),
               const SizedBox(height: 20),
               Row(
