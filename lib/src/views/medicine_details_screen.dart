@@ -1,5 +1,6 @@
 import 'package:dose_reminder/src/models/dose.dart';
 import 'package:dose_reminder/src/models/medicine.dart';
+import 'package:dose_reminder/src/widgets/ui/background_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -19,11 +20,14 @@ class MedicineDetailsScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(medicine.name),
       ),
-      body: schedule.isEmpty
-          ? Center(child: Text(l10n.noScheduleFoundForThisMedicine))
-          : ListView.builder(
-              itemCount: schedule.length,
-              itemBuilder: (context, index) {
+      body: Stack(
+        children: [
+          const BackgroundLogo(),
+          schedule.isEmpty
+              ? Center(child: Text(l10n.noScheduleFoundForThisMedicine))
+              : ListView.builder(
+                  itemCount: schedule.length,
+                  itemBuilder: (context, index) {
                 final dose = schedule[index];
                 final formattedDate = DateFormat.yMMMd().add_jm().format(dose.scheduledTime);
                 
@@ -41,6 +45,8 @@ class MedicineDetailsScreen extends ConsumerWidget {
                 );
               },
             ),
+        ],
+      ),
     );
   }
 }

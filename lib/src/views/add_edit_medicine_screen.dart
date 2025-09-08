@@ -1,16 +1,18 @@
 import 'dart:io';
-// import 'package:dose_reminder/src/models/dose.dart';
+import 'package:dose_reminder/src/models/dose.dart';
 import 'package:dose_reminder/src/models/medicine.dart';
 import 'package:dose_reminder/src/services/database_service.dart';
 import 'package:dose_reminder/src/services/notification_service.dart';
 import 'package:dose_reminder/src/services/scheduling_service.dart';
+import 'package:dose_reminder/src/widgets/ui/app_tile.dart';
+import 'package:dose_reminder/src/widgets/ui/background_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:dose_reminder/l10n/app_localizations.dart';
-
 class AddEditMedicineScreen extends ConsumerStatefulWidget {
   const AddEditMedicineScreen({super.key});
 
@@ -234,7 +236,24 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
                   final doses = schedulingService.generateDoses(
                     managedMedicine,
                   );
-                  managedMedicine.doseHistory?.addAll(doses);
+                  print('DEBUG: Generated ${doses.length} doses');
+                  for (int i = 0; i < doses.length && i < 5; i++) {
+                    print('DEBUG: Dose $i: ${doses[i].scheduledTime}');
+                  }
+                  
+                  if (managedMedicine.doseHistory == null) {
+                    print('DEBUG: doseHistory is null!');
+                  } else {
+                    print('DEBUG: doseHistory initialized, adding doses to box first');
+                    // First add each dose to the doses box
+                    final doseBox = await Hive.openBox<Dose>('doses');
+                    for (final dose in doses) {
+                      await doseBox.add(dose);
+                    }
+                    // Then add to the HiveList (now they're in the correct box)
+                    managedMedicine.doseHistory!.addAll(doses);
+                    print('DEBUG: Added doses, now has ${managedMedicine.doseHistory!.length} doses');
+                  }
                   await managedMedicine.save();
 
                   // 5. Schedule notifications
@@ -264,133 +283,191 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
           ),
         ],
       ),
-      body: Form(
-        key: _formKey,
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: ListView(
-            children: [
-              GestureDetector(
-                onTap: _showImageSourceDialog,
-                child: CircleAvatar(
-                  radius: 60,
-                  backgroundColor: Colors.grey[200],
-                  backgroundImage: _imageFile != null
-                      ? FileImage(_imageFile!)
-                      : null,
-                  child: _imageFile == null
-                      ? const Icon(
-                          Icons.camera_alt,
-                          size: 50,
-                          color: Colors.grey,
-                        )
-                      : null,
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                decoration: InputDecoration(
-                  labelText: l10n.medicineName,
-                  border: const OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return l10n.pleaseEnterAMedicineName;
-                  }
-                  return null;
-                },
-                onSaved: (value) => _name = value ?? '',
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<FrequencyType>(
-                decoration: InputDecoration(
-                  labelText: l10n.frequency,
-                  border: const OutlineInputBorder(),
-                ),
-                initialValue: _frequencyType,
-                items: FrequencyType.values.map((type) {
-                  return DropdownMenuItem(
-                    value: type,
-                    child: Text(type.toString().split('.').last),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _frequencyType = value;
-                  });
-                },
-                validator: (value) =>
-                    value == null ? l10n.pleaseSelectAFrequency : null,
-              ),
-              const SizedBox(height: 16),
-              _buildFrequencyFields(),
-              const SizedBox(height: 16),
-              TextFormField(
-                decoration: InputDecoration(
-                  labelText: l10n.durationInDays,
-                  border: const OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return l10n.pleaseEnterTheDuration;
-                  }
-                  if (int.tryParse(value) == null || int.parse(value) <= 0) {
-                    return l10n.pleaseEnterAValidNumberOfDays;
-                  }
-                  return null;
-                },
-                onSaved: (value) => _durationInDays = int.tryParse(value ?? ''),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(l10n.startDate),
-                  TextButton(
-                    onPressed: _selectDate,
-                    child: Text(DateFormat.yMd().format(_startDateTime)),
-                  ),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(l10n.startTime),
-                  TextButton(
-                    onPressed: _selectTime,
-                    child: Text(DateFormat.jm().format(_startDateTime)),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${l10n.preferredHours}: ${_preferredHours.start.round()}:00 - ${_preferredHours.end.round()}:00',
-                  ),
-                  RangeSlider(
-                    values: _preferredHours,
-                    min: 0,
-                    max: 23,
-                    divisions: 23,
-                    labels: RangeLabels(
-                      '${_preferredHours.start.round()}:00',
-                      '${_preferredHours.end.round()}:00',
+      body: Stack(
+        children: [
+          const BackgroundLogo(),
+          Form(
+            key: _formKey,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ListView.separated(
+                itemCount: 5,
+            separatorBuilder: (context, index) => const SizedBox(height: 16),
+            itemBuilder: (context, index) {
+              switch (index) {
+                case 0:
+                  return AppTile(
+                    child: Column(
+                      children: [
+                        GestureDetector(
+                          onTap: _showImageSourceDialog,
+                          child: CircleAvatar(
+                            radius: 60,
+                            backgroundColor: Colors.grey[200],
+                            backgroundImage: _imageFile != null
+                                ? FileImage(_imageFile!)
+                                : null,
+                            child: _imageFile == null
+                                ? const Icon(
+                                    Icons.camera_alt,
+                                    size: 50,
+                                    color: Colors.grey,
+                                  )
+                                : null,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          decoration: InputDecoration(
+                            labelText: l10n.medicineName,
+                            border: const OutlineInputBorder(),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return l10n.pleaseEnterAMedicineName;
+                            }
+                            return null;
+                          },
+                          onSaved: (value) => _name = value ?? '',
+                        ),
+                      ],
                     ),
-                    onChanged: (values) {
-                      setState(() {
-                        _preferredHours = values;
-                      });
-                    },
-                  ),
-                ],
-              ),
-            ],
+                  );
+                case 1:
+                  return AppTile(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.frequency,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 12),
+                        DropdownButtonFormField<FrequencyType>(
+                          decoration: InputDecoration(
+                            labelText: l10n.frequency,
+                            border: const OutlineInputBorder(),
+                          ),
+                          initialValue: _frequencyType,
+                          items: FrequencyType.values.map((type) {
+                            return DropdownMenuItem(
+                              value: type,
+                              child: Text(type.toString().split('.').last),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _frequencyType = value;
+                            });
+                          },
+                          validator: (value) =>
+                              value == null ? l10n.pleaseSelectAFrequency : null,
+                        ),
+                        const SizedBox(height: 12),
+                        _buildFrequencyFields(),
+                      ],
+                    ),
+                  );
+                case 2:
+                  return AppTile(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.duration,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          decoration: InputDecoration(
+                            labelText: l10n.durationInDays,
+                            border: const OutlineInputBorder(),
+                          ),
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return l10n.pleaseEnterTheDuration;
+                            }
+                            if (int.tryParse(value) == null || int.parse(value) <= 0) {
+                              return l10n.pleaseEnterAValidNumberOfDays;
+                            }
+                            return null;
+                          },
+                          onSaved: (value) => _durationInDays = int.tryParse(value ?? ''),
+                        ),
+                      ],
+                    ),
+                  );
+                case 3:
+                  return AppTile(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.startDate,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(l10n.startDate),
+                            TextButton(
+                              onPressed: _selectDate,
+                              child: Text(DateFormat.yMd().format(_startDateTime)),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(l10n.startTime),
+                            TextButton(
+                              onPressed: _selectTime,
+                              child: Text(DateFormat.jm().format(_startDateTime)),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                case 4:
+                  return AppTile(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${l10n.preferredHours}: ${_preferredHours.start.round()}:00 - ${_preferredHours.end.round()}:00',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 12),
+                        RangeSlider(
+                          values: _preferredHours,
+                          min: 0,
+                          max: 23,
+                          divisions: 23,
+                          labels: RangeLabels(
+                            '${_preferredHours.start.round()}:00',
+                            '${_preferredHours.end.round()}:00',
+                          ),
+                          onChanged: (values) {
+                            setState(() {
+                              _preferredHours = values;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                  );
+                default:
+                  return const SizedBox.shrink();
+              }
+            },
           ),
         ),
+      ),
+        ],
       ),
     );
   }

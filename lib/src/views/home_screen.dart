@@ -4,6 +4,7 @@ import 'package:dose_reminder/src/services/database_service.dart';
 import 'package:dose_reminder/src/views/add_edit_medicine_screen.dart';
 import 'package:dose_reminder/src/views/settings_screen.dart';
 import 'package:dose_reminder/src/widgets/medicine_card.dart';
+import 'package:dose_reminder/src/widgets/ui/background_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dose_reminder/l10n/app_localizations.dart';
@@ -20,14 +21,6 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final medicinesAsyncValue = ref.watch(medicinesProvider);
     final l10n = AppLocalizations.of(context)!;
-    final themeMode = ref.watch(themeNotifierProvider);
-
-    final isDarkMode = themeMode == ThemeMode.dark ||
-        (themeMode == ThemeMode.system &&
-            MediaQuery.of(context).platformBrightness == Brightness.dark);
-
-    final logoAsset = isDarkMode ? 'assets/logo_dark.png' : 'assets/logo_bright.png';
-    final backgroundColor = isDarkMode ? const Color.fromARGB(255, 18, 27, 36) : Colors.white;
 
     return Scaffold(
       appBar: AppBar(
@@ -46,21 +39,7 @@ class HomeScreen extends ConsumerWidget {
       ),
       body: Stack(
         children: [
-          Positioned.fill(
-            child: Container(
-              color: backgroundColor,
-              child: Center(
-                child: Opacity(
-                  opacity: 0.06, // Very subtle background logo
-                  child: Image.asset(
-                    logoAsset,
-                    fit: BoxFit.contain,
-                    width: MediaQuery.of(context).size.width * 0.8,
-                  ),
-                ),
-              ),
-            ),
-          ),
+          const BackgroundLogo(),
           // The actual content of the screen
           medicinesAsyncValue.when(
             data: (medicines) {

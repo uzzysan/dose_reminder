@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 
 const String medicineBoxName = 'medicines';
+const String doseBoxName = 'doses';
 
 final databaseServiceProvider = Provider<DatabaseService>((ref) {
   return DatabaseService();
@@ -12,7 +13,17 @@ final databaseServiceProvider = Provider<DatabaseService>((ref) {
 class DatabaseService {
   Future<int> addMedicine(Medicine medicine) async {
     final box = await Hive.openBox<Medicine>(medicineBoxName);
-    return await box.add(medicine);
+    final medicineKey = await box.add(medicine);
+    
+    // Initialize the doseHistory HiveList after the medicine is saved
+    final managedMedicine = box.get(medicineKey);
+    if (managedMedicine != null) {
+      final doseBox = await Hive.openBox<Dose>(doseBoxName);
+      managedMedicine.doseHistory = HiveList(doseBox);
+      await managedMedicine.save();
+    }
+    
+    return medicineKey;
   }
 
   Future<List<Medicine>> getMedicines() async {

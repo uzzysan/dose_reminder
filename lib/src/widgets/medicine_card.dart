@@ -15,30 +15,17 @@ class MedicineCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final schedule = medicine.doseHistory ?? [];
     final l10n = AppLocalizations.of(context)!;
-    final now = DateTime.now();
     
-    // Helper function to check if two dates are the same day
-    bool isSameDay(DateTime a, DateTime b) {
-      return a.year == b.year && a.month == b.month && a.day == b.day;
-    }
+    // Get all doses statistics
+    final totalDoses = schedule.length;
+    final pendingDoses = schedule.where((d) => d.status == DoseStatus.pending).length;
     
-    // Get today's doses
-    final todayDoses = schedule.where((dose) => isSameDay(dose.scheduledTime, now)).toList();
-    final todayTaken = todayDoses.where((d) => d.status == DoseStatus.taken).length;
-    final todayTotal = todayDoses.length;
-    
-    // Find the next dose (first pending dose today, or next pending dose overall)
+    // Find the next pending dose
     Dose? nextDose;
     try {
-      // First try to find next pending dose today
-      nextDose = todayDoses.firstWhere((d) => d.status == DoseStatus.pending);
+      nextDose = schedule.firstWhere((d) => d.status == DoseStatus.pending);
     } catch (e) {
-      try {
-        // If no pending doses today, find next pending dose overall
-        nextDose = schedule.firstWhere((d) => d.status == DoseStatus.pending);
-      } catch (e) {
-        nextDose = null; // No pending doses at all
-      }
+      nextDose = null; // No pending doses
     }
 
     return AppTile(
@@ -55,9 +42,9 @@ class MedicineCard extends ConsumerWidget {
         children: [
           Text(medicine.name, style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 8),
-          // Only show dose counter if there are doses scheduled for today
-          if (todayTotal > 0) 
-            Text('${l10n.dosesLeft}: ${todayTotal - todayTaken} ${l10n.ofWord} $todayTotal')
+          // Show dose progress if there are any doses in the cycle
+          if (totalDoses > 0) 
+            Text('${l10n.dosesLeft}: $pendingDoses ${l10n.ofWord} $totalDoses')
           else
             Text(l10n.noScheduleFoundForThisMedicine),
           const SizedBox(height: 4),
