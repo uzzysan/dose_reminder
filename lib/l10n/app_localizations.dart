@@ -236,6 +236,12 @@ abstract class AppLocalizations {
   /// **'Doses left'**
   String get dosesLeft;
 
+  /// No description provided for @ofWord.
+  ///
+  /// In en, this message translates to:
+  /// **'of'**
+  String get ofWord;
+
   /// No description provided for @nextDose.
   ///
   /// In en, this message translates to:

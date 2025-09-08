@@ -79,6 +79,9 @@ class AppLocalizationsPl extends AppLocalizations {
   String get dosesLeft => 'Pozostałe dawki';
 
   @override
+  String get ofWord => 'z';
+
+  @override
   String get nextDose => 'Następna dawka';
 
   @override

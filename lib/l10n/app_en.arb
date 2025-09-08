@@ -23,6 +23,7 @@
     "dose": "Dose",
     "totalDoses": "Total doses",
     "dosesLeft": "Doses left",
+    "ofWord": "of",
     "nextDose": "Next dose",
     "allDosesTaken": "All doses taken!",
     "timeForYourDose": "Time for your dose!",

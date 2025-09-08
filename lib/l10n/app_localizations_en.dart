@@ -79,6 +79,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dosesLeft => 'Doses left';
 
   @override
+  String get ofWord => 'of';
+
+  @override
   String get nextDose => 'Next dose';
 
   @override

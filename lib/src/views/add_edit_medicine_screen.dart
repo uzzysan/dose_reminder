@@ -152,10 +152,12 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           validator: (value) {
-            if (value == null || value.isEmpty)
+            if (value == null || value.isEmpty) {
               return l10n.pleaseEnterHowManyTimesPerDay;
-            if (int.tryParse(value) == null || int.parse(value) <= 0)
+            }
+            if (int.tryParse(value) == null || int.parse(value) <= 0) {
               return l10n.invalidNumber;
+            }
             return null;
           },
           onSaved: (value) => _timesPerDay = int.tryParse(value!),
@@ -166,10 +168,12 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           validator: (value) {
-            if (value == null || value.isEmpty)
+            if (value == null || value.isEmpty) {
               return l10n.pleaseEnterTheIntervalInDays;
-            if (int.tryParse(value) == null || int.parse(value) <= 0)
+            }
+            if (int.tryParse(value) == null || int.parse(value) <= 0) {
               return l10n.invalidNumber;
+            }
             return null;
           },
           onSaved: (value) => _everyXDays = int.tryParse(value!),
@@ -194,6 +198,9 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
               if (_formKey.currentState!.validate()) {
                 _formKey.currentState!.save();
 
+                // Capture navigator before async operations
+                final navigator = Navigator.of(context);
+                
                 final dbService = ref.read(databaseServiceProvider);
                 final schedulingService = ref.read(schedulingServiceProvider);
                 final notificationService = ref.read(
@@ -245,8 +252,10 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
                   }
                 }
 
-                if (!mounted) return; // Early exit if widget is unmounted
-                Navigator.of(context).pop();
+                // Check if widget is still mounted before using navigator
+                if (mounted) {
+                  navigator.pop();
+                }
               }
             },
           ),
@@ -295,7 +304,7 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
                   labelText: l10n.frequency,
                   border: const OutlineInputBorder(),
                 ),
-                value: _frequencyType,
+                initialValue: _frequencyType,
                 items: FrequencyType.values.map((type) {
                   return DropdownMenuItem(
                     value: type,
@@ -321,10 +330,12 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 validator: (value) {
-                  if (value == null || value.isEmpty)
+                  if (value == null || value.isEmpty) {
                     return l10n.pleaseEnterTheDuration;
-                  if (int.tryParse(value) == null || int.parse(value) <= 0)
+                  }
+                  if (int.tryParse(value) == null || int.parse(value) <= 0) {
                     return l10n.pleaseEnterAValidNumberOfDays;
+                  }
                   return null;
                 },
                 onSaved: (value) => _durationInDays = int.tryParse(value!),
