@@ -33,7 +33,7 @@ class AppTile extends StatelessWidget {
           borderRadius: BorderRadius.all(Radius.circular(radius ?? 16)),
           child: Container(
             decoration: BoxDecoration(
-              color: tileBase.withOpacity(0.30), // 30% przezroczystości
+              color: tileBase.withValues(alpha: 0.30), // 30% przezroczystości
               borderRadius: BorderRadius.all(Radius.circular(radius ?? 16)),
               border: Border.all(color: tileBase, width: 1), // ta sama barwa, bez przezroczystości
             ),
