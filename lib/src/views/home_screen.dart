@@ -1,4 +1,5 @@
 import 'package:dose_reminder/src/models/medicine.dart';
+import 'package:dose_reminder/src/providers/settings_provider.dart';
 import 'package:dose_reminder/src/services/database_service.dart';
 import 'package:dose_reminder/src/views/add_edit_medicine_screen.dart';
 import 'package:dose_reminder/src/views/settings_screen.dart';
@@ -19,6 +20,14 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final medicinesAsyncValue = ref.watch(medicinesProvider);
     final l10n = AppLocalizations.of(context)!;
+    final themeMode = ref.watch(themeNotifierProvider);
+
+    final isDarkMode = themeMode == ThemeMode.dark ||
+        (themeMode == ThemeMode.system &&
+            MediaQuery.of(context).platformBrightness == Brightness.dark);
+
+    final logoAsset = isDarkMode ? 'assets/logo_dark.png' : 'assets/logo_bright.png';
+    final backgroundColor = isDarkMode ? const Color.fromARGB(255, 18, 27, 36) : Colors.white;
 
     return Scaffold(
       appBar: AppBar(
@@ -35,22 +44,39 @@ class HomeScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: medicinesAsyncValue.when(
-        data: (medicines) {
-          if (medicines.isEmpty) {
-            return Center(
-              child: Text(l10n.noMedicinesAdded),
-            );
-          }
-          return ListView.builder(
-            itemCount: medicines.length,
-            itemBuilder: (context, index) {
-              return MedicineCard(medicine: medicines[index]);
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Container(
+              color: backgroundColor,
+              child: Center(
+                child: Image.asset(
+                  logoAsset,
+                  fit: BoxFit.contain,
+                  width: MediaQuery.of(context).size.width * 0.6,
+                ),
+              ),
+            ),
+          ),
+          // The actual content of the screen
+          medicinesAsyncValue.when(
+            data: (medicines) {
+              if (medicines.isEmpty) {
+                return Center(
+                  child: Text(l10n.noMedicinesAdded),
+                );
+              }
+              return ListView.builder(
+                itemCount: medicines.length,
+                itemBuilder: (context, index) {
+                  return MedicineCard(medicine: medicines[index]);
+                },
+              );
             },
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (err, stack) => Center(child: Text('Error: $err')),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {

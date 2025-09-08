@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:dose_reminder/src/views/splash_screen.dart';
 
 Future<void> main() async {
   // Ensure flutter is initialized
@@ -39,11 +40,19 @@ class MyApp extends ConsumerWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
+        cardColor: const Color.fromARGB(128, 160, 202, 247),
+        scaffoldBackgroundColor: const Color.fromARGB(128, 160, 202, 247),
+        canvasColor: const Color.fromARGB(128, 160, 202, 247),
+        dialogBackgroundColor: const Color.fromARGB(128, 160, 202, 247),
       ),
       darkTheme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple,
             brightness: Brightness.dark),
         useMaterial3: true,
+        cardColor: const Color.fromARGB(128, 19, 46, 73),
+        scaffoldBackgroundColor: const Color.fromARGB(128, 19, 46, 73),
+        canvasColor: const Color.fromARGB(128, 19, 46, 73),
+        dialogBackgroundColor: const Color.fromARGB(128, 19, 46, 73),
       ),
       themeMode: themeMode,
       localizationsDelegates: const [
@@ -57,7 +66,7 @@ class MyApp extends ConsumerWidget {
         Locale('pl', ''), // Polish
       ],
       locale: locale, // Set the locale from the provider
-      home: const HomeScreen(),
+      home: const SplashScreen(),
     );
   }
 }
