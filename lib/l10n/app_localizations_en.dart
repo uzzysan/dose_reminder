@@ -179,4 +179,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get duration => 'Duration';
+
+  @override
+  String get medicineSavedSuccessfully => 'Medicine saved successfully';
+
+  @override
+  String get failedToSaveMedicine => 'Failed to save medicine';
 }

@@ -200,83 +200,75 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
               if (_formKey.currentState!.validate()) {
                 _formKey.currentState!.save();
 
-                // Capture navigator before async operations
                 final navigator = Navigator.of(context);
-                
-                final dbService = ref.read(databaseServiceProvider);
-                final schedulingService = ref.read(schedulingServiceProvider);
-                final notificationService = ref.read(
-                  notificationServiceProvider,
-                );
+                final scaffoldMessenger = ScaffoldMessenger.of(context);
+                final l10n = AppLocalizations.of(context)!;
 
-                // 1. Create medicine object without doses
-                final newMedicine = Medicine(
-                  name: _name,
-                  photoPath: _imageFile?.path,
-                  frequencyType: _frequencyType!,
-                  timesPerDay: _timesPerDay,
-                  everyXDays: _everyXDays,
-                  weeklyFrequency: _weeklyFrequency.toList(),
-                  durationInDays: _durationInDays!,
-                  startDateTime: _startDateTime,
-                  preferredStartHour: _preferredHours.start.round(),
-                  preferredEndHour: _preferredHours.end.round(),
-                );
+                try {
+                  final dbService = ref.read(databaseServiceProvider);
+                  final schedulingService =
+                      ref.read(schedulingServiceProvider);
+                  final notificationService =
+                      ref.read(notificationServiceProvider);
 
-                // 2. Save to DB to get a key
-                final medicineKey = await dbService.addMedicine(newMedicine);
-
-                // 3. Get the managed instance from Hive
-                final managedMedicine = await dbService.getMedicine(
-                  medicineKey,
-                );
-
-                if (managedMedicine != null) {
-                  // 4. Generate doses and add them to the HiveList
-                  final doses = schedulingService.generateDoses(
-                    managedMedicine,
+                  final newMedicine = Medicine(
+                    name: _name,
+                    photoPath: _imageFile?.path,
+                    frequencyType: _frequencyType!,
+                    timesPerDay: _timesPerDay,
+                    everyXDays: _everyXDays,
+                    weeklyFrequency: _weeklyFrequency.toList(),
+                    durationInDays: _durationInDays!,
+                    startDateTime: _startDateTime,
+                    preferredStartHour: _preferredHours.start.round(),
+                    preferredEndHour: _preferredHours.end.round(),
                   );
-                  print('DEBUG: Generated ${doses.length} doses');
-                  for (int i = 0; i < doses.length && i < 5; i++) {
-                    print('DEBUG: Dose $i: ${doses[i].scheduledTime}');
-                  }
-                  
-                  if (managedMedicine.doseHistory == null) {
-                    print('DEBUG: doseHistory is null!');
-                  } else {
-                    print('DEBUG: doseHistory initialized, adding doses to box first');
-                    // First add each dose to the doses box
-                    final doseBox = await Hive.openBox<Dose>('doses');
-                    for (final dose in doses) {
-                      await doseBox.add(dose);
-                    }
-                    // Then add to the HiveList (now they're in the correct box)
-                    managedMedicine.doseHistory!.addAll(doses);
-                    print('DEBUG: Added doses, now has ${managedMedicine.doseHistory!.length} doses');
-                  }
-                  await managedMedicine.save();
 
-                  // 5. Schedule notifications
-                  final doseHistory = managedMedicine.doseHistory;
-                  if (doseHistory != null) {
-                    for (var dose in doseHistory) {
-                      final notificationId = dose
-                          .scheduledTime
-                          .millisecondsSinceEpoch
-                          .remainder(100000);
-                      await notificationService.scheduleDoseNotification(
-                        notificationId,
-                        managedMedicine.name,
-                        medicineKey, // Pass the key
-                        dose.scheduledTime,
-                      );
+                  final medicineKey = await dbService.addMedicine(newMedicine);
+                  final managedMedicine =
+                      await dbService.getMedicine(medicineKey);
+
+                  if (managedMedicine != null) {
+                    final doses =
+                        schedulingService.generateDoses(managedMedicine);
+                    if (managedMedicine.doseHistory != null) {
+                      final doseBox = await Hive.openBox<Dose>('doses');
+                      for (final dose in doses) {
+                        await doseBox.add(dose);
+                      }
+                      managedMedicine.doseHistory!.addAll(doses);
+                      await managedMedicine.save();
+
+                      for (var dose in managedMedicine.doseHistory!) {
+                        final notificationId = dose.scheduledTime
+                            .millisecondsSinceEpoch
+                            .remainder(100000);
+                        await notificationService.scheduleDoseNotification(
+                          notificationId,
+                          managedMedicine.name,
+                          medicineKey,
+                          dose.scheduledTime,
+                        );
+                      }
                     }
                   }
-                }
-
-                // Check if widget is still mounted before using navigator
-                if (mounted) {
-                  navigator.pop();
+                  scaffoldMessenger.showSnackBar(
+                    SnackBar(
+                      content: Text(l10n.medicineSavedSuccessfully),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                } catch (e) {
+                  scaffoldMessenger.showSnackBar(
+                    SnackBar(
+                      content: Text(l10n.failedToSaveMedicine),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                } finally {
+                  if (mounted) {
+                    navigator.pop();
+                  }
                 }
               }
             },

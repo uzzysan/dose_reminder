@@ -177,4 +177,10 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get duration => 'Czas trwania';
+
+  @override
+  String get medicineSavedSuccessfully => 'Lek zapisany pomyślnie';
+
+  @override
+  String get failedToSaveMedicine => 'Nie udało się zapisać leku';
 }

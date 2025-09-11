@@ -427,6 +427,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Duration'**
   String get duration;
+
+  /// No description provided for @medicineSavedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Medicine saved successfully'**
+  String get medicineSavedSuccessfully;
+
+  /// No description provided for @failedToSaveMedicine.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save medicine'**
+  String get failedToSaveMedicine;
 }
 
 class _AppLocalizationsDelegate
