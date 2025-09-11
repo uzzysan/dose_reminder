@@ -1,5 +1,6 @@
 import 'package:dose_reminder/src/models/dose.dart';
 import 'package:dose_reminder/src/models/medicine.dart';
+import 'package:dose_reminder/src/providers/dose_provider.dart';
 import 'package:dose_reminder/src/widgets/ui/background_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,7 +14,7 @@ class MedicineDetailsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final List<Dose> schedule = medicine.doseHistory ?? [];
+    final schedule = ref.watch(doseProvider(medicine));
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
@@ -28,23 +29,51 @@ class MedicineDetailsScreen extends ConsumerWidget {
               : ListView.builder(
                   itemCount: schedule.length,
                   itemBuilder: (context, index) {
-                final dose = schedule[index];
-                final formattedDate = DateFormat.yMMMd().add_jm().format(dose.scheduledTime);
-                
-                return ListTile(
-                  leading: Text('${l10n.dose} ${index + 1}'),
-                  title: Text(formattedDate),
-                  trailing: Icon(
-                    dose.status == DoseStatus.pending ? Icons.radio_button_unchecked :
-                    dose.status == DoseStatus.taken ? Icons.check_circle :
-                    Icons.cancel_outlined,
-                    color: dose.status == DoseStatus.pending ? Colors.grey :
-                    dose.status == DoseStatus.taken ? Colors.green :
-                    Colors.red,
-                  ),
-                );
-              },
-            ),
+                    final dose = schedule[index];
+                    final formattedDate =
+                        DateFormat.yMMMd().add_jm().format(dose.scheduledTime);
+                    final isDue = dose.scheduledTime.isBefore(DateTime.now());
+                    final isPending = dose.status == DoseStatus.pending;
+
+                    return ListTile(
+                      leading: Text('${l10n.dose} ${index + 1}'),
+                      title: Text(formattedDate),
+                      trailing: isPending && isDue
+                          ? Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.check_circle,
+                                      color: Colors.green),
+                                  onPressed: () {
+                                    ref.read(doseProvider(medicine).notifier)
+                                        .updateDoseStatus(dose, DoseStatus.taken);
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.cancel, color: Colors.red),
+                                  onPressed: () {
+                                    ref.read(doseProvider(medicine).notifier)
+                                        .updateDoseStatus(dose, DoseStatus.skipped);
+                                  },
+                                ),
+                              ],
+                            )
+                          : Icon(
+                              dose.status == DoseStatus.pending
+                                  ? Icons.radio_button_unchecked
+                                  : dose.status == DoseStatus.taken
+                                      ? Icons.check_circle
+                                      : Icons.cancel_outlined,
+                              color: dose.status == DoseStatus.pending
+                                  ? Colors.grey
+                                  : dose.status == DoseStatus.taken
+                                      ? Colors.green
+                                      : Colors.red,
+                            ),
+                    );
+                  },
+                ),
         ],
       ),
     );

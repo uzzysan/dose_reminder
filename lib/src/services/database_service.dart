@@ -41,20 +41,18 @@ class DatabaseService {
     await box.put(key, medicine);
   }
 
-  Future<void> updateDoseStatus(int medicineKey, DateTime scheduledTime, DoseStatus newStatus) async {
-    final box = await Hive.openBox<Medicine>(medicineBoxName);
-    final medicine = box.get(medicineKey);
+  Future<void> updateDose(Dose dose) async {
+    await dose.save();
+  }
 
-    if (medicine != null && medicine.doseHistory != null) {
-      final doseIndex = medicine.doseHistory!.indexWhere((d) => d.scheduledTime == scheduledTime);
-      
-      if (doseIndex != -1) {
-        medicine.doseHistory![doseIndex].status = newStatus;
-        if (newStatus == DoseStatus.taken) {
-          medicine.doseHistory![doseIndex].takenTime = DateTime.now();
-        }
-        await medicine.save();
-      }
+  Future<void> addDoseToMedicine(dynamic medicineKey, Dose dose) async {
+    final medicineBox = await Hive.openBox<Medicine>(medicineBoxName);
+    final medicine = medicineBox.get(medicineKey);
+    if (medicine != null) {
+      final doseBox = await Hive.openBox<Dose>(doseBoxName);
+      await doseBox.add(dose);
+      medicine.doseHistory?.add(dose);
+      await medicine.save();
     }
   }
 }

@@ -59,24 +59,33 @@ class NotificationService {
     final scheduledTime = DateTime.parse(scheduledTimeString);
 
     final dbService = _ref.read(databaseServiceProvider);
+    final medicine = await dbService.getMedicine(medicineKey);
 
-    switch (response.actionId) {
-      case takenActionId:
-        await dbService.updateDoseStatus(medicineKey, scheduledTime, DoseStatus.taken);
-        break;
-      case snoozeActionId:
-        final snoozedTime = DateTime.now().add(const Duration(minutes: 30));
-        // We need medicine name for the notification body
-        final medicine = await dbService.getMedicine(medicineKey);
-        if (medicine != null) {
-          await scheduleDoseNotification(
-            response.id! + 1000000, // Create a new unique ID for the snoozed notification
-            medicine.name,
-            medicineKey,
-            snoozedTime,
-          );
+    if (medicine != null && medicine.doseHistory != null) {
+      final doseIndex = medicine.doseHistory!.indexWhere((d) => d.scheduledTime == scheduledTime);
+      
+      if (doseIndex != -1) {
+        final dose = medicine.doseHistory![doseIndex];
+        switch (response.actionId) {
+          case takenActionId:
+            dose.status = DoseStatus.taken;
+            dose.takenTime = DateTime.now();
+            await dbService.updateDose(dose);
+            break;
+          case snoozeActionId:
+            final snoozedTime = DateTime.now().add(const Duration(minutes: 30));
+            // We need medicine name for the notification body
+            if (medicine != null) {
+              await scheduleDoseNotification(
+                response.id! + 1000000, // Create a new unique ID for the snoozed notification
+                medicine.name,
+                medicineKey,
+                snoozedTime,
+              );
+            }
+            break;
         }
-        break;
+      }
     }
   }
 
