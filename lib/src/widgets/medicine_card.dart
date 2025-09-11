@@ -1,6 +1,7 @@
 import 'package:dose_reminder/src/models/dose.dart';
 import 'package:dose_reminder/src/models/medicine.dart';
 import 'package:dose_reminder/src/views/medicine_details_screen.dart';
+import 'package:dose_reminder/src/widgets/ui/app_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dose_reminder/l10n/app_localizations.dart';
@@ -13,11 +14,13 @@ class MedicineCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final schedule = medicine.doseHistory ?? [];
-    final dosesLeft = schedule.where((d) => d.status == DoseStatus.pending).length;
-    final totalDoses = schedule.length;
     final l10n = AppLocalizations.of(context)!;
-
-    // Find the next dose
+    
+    // Get all doses statistics
+    final totalDoses = schedule.length;
+    final pendingDoses = schedule.where((d) => d.status == DoseStatus.pending).length;
+    
+    // Find the next pending dose
     Dose? nextDose;
     try {
       nextDose = schedule.firstWhere((d) => d.status == DoseStatus.pending);
@@ -25,34 +28,32 @@ class MedicineCard extends ConsumerWidget {
       nextDose = null; // No pending doses
     }
 
-    return Card(
+    return AppTile(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => MedicineDetailsScreen(medicine: medicine),
-            ),
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(medicine.name, style: Theme.of(context).textTheme.titleLarge),
-              const SizedBox(height: 8),
-              Text('${l10n.dosesLeft}: $dosesLeft ${l10n.ofWord} $totalDoses'),
-              const SizedBox(height: 4),
-              if (nextDose != null)
-                // This is a placeholder for a countdown timer widget
-                Text('${l10n.nextDose}: ${nextDose.scheduledTime.toString()}')
-              else
-                Text(l10n.allDosesTaken),
-            ],
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => MedicineDetailsScreen(medicine: medicine),
           ),
-        ),
+        );
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(medicine.name, style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: 8),
+          // Show dose progress if there are any doses in the cycle
+          if (totalDoses > 0) 
+            Text('${l10n.dosesLeft}: $pendingDoses ${l10n.ofWord} $totalDoses')
+          else
+            Text(l10n.noScheduleFoundForThisMedicine),
+          const SizedBox(height: 4),
+          if (nextDose != null)
+            // This is a placeholder for a countdown timer widget
+            Text('${l10n.nextDose}: ${nextDose.scheduledTime.toString()}')
+          else
+            Text(l10n.allDosesTaken),
+        ],
       ),
     );
   }
