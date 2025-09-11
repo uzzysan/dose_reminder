@@ -1,3 +1,4 @@
+
 {
     "@@locale": "en",
     "appTitle": "Dose Reminder",
@@ -59,5 +60,7 @@
     "noDoseHistory": "No dose history available.",
     "weeklyFrequency": "Weekly Frequency",
     "days": "days",
-    "duration": "Duration"
+    "duration": "Duration",
+    "medicineSavedSuccessfully": "Medicine saved successfully",
+    "failedToSaveMedicine": "Failed to save medicine"
 }
