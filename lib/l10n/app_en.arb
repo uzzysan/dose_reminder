@@ -62,5 +62,7 @@
     "days": "days",
     "duration": "Duration",
     "medicineSavedSuccessfully": "Medicine saved successfully",
-    "failedToSaveMedicine": "Failed to save medicine"
+    "failedToSaveMedicine": "Failed to save medicine",
+    "daily": "Daily",
+    "weekly": "Weekly"
 }

@@ -145,6 +145,17 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
     );
   }
 
+  String _getTranslatedFrequencyType(FrequencyType type, AppLocalizations l10n) {
+    switch (type) {
+      case FrequencyType.daily:
+        return l10n.daily;
+      case FrequencyType.everyXDays:
+        return l10n.everyXDays;
+      case FrequencyType.weekly:
+        return l10n.weekly;
+    }
+  }
+
   Widget _buildFrequencyFields() {
     final l10n = AppLocalizations.of(context)!;
     switch (_frequencyType) {
@@ -344,7 +355,7 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
                           items: FrequencyType.values.map((type) {
                             return DropdownMenuItem(
                               value: type,
-                              child: Text(type.toString().split('.').last),
+                              child: Text(_getTranslatedFrequencyType(type, l10n)),
                             );
                           }).toList(),
                           onChanged: (value) {

@@ -62,5 +62,7 @@
     "days": "dni",
     "duration": "Czas trwania",
     "medicineSavedSuccessfully": "Lek zapisany pomyślnie",
-    "failedToSaveMedicine": "Nie udało się zapisać leku"
+    "failedToSaveMedicine": "Nie udało się zapisać leku",
+    "daily": "Codziennie",
+    "weekly": "Tygodniowo"
 }
