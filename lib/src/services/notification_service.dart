@@ -1,9 +1,11 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:dose_reminder/src/models/dose.dart';
 import 'package:dose_reminder/src/services/database_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -47,6 +49,17 @@ class NotificationService {
     tz.initializeTimeZones();
     final String timeZoneName = await FlutterTimezone.getLocalTimezone();
     tz.setLocalLocation(tz.getLocation(timeZoneName));
+  }
+
+  Future<bool> requestPermissions() async {
+    if (Platform.isAndroid) {
+      final status = await Permission.notification.request();
+      return status.isGranted;
+    } else if (Platform.isIOS) {
+      // iOS permissions are handled by FlutterLocalNotificationsPlugin
+      return true;
+    }
+    return true;
   }
 
   Future<void> _onDidReceiveNotificationResponse(NotificationResponse response) async {

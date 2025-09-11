@@ -2,7 +2,6 @@ import 'package:dose_reminder/src/models/dose.dart';
 import 'package:dose_reminder/src/models/medicine.dart';
 import 'package:dose_reminder/src/providers/settings_provider.dart';
 import 'package:dose_reminder/src/services/notification_service.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -22,6 +21,14 @@ Future<void> main() async {
   try {
     await container.read(notificationServiceProvider).init();
     developer.log('NotificationService initialized successfully');
+
+    // Request notification permissions
+    final hasPermissions = await container.read(notificationServiceProvider).requestPermissions();
+    if (hasPermissions) {
+      developer.log('Notification permissions granted');
+    } else {
+      developer.log('Notification permissions denied or not available');
+    }
   } catch (e) {
     developer.log('Error initializing NotificationService: $e');
   }
@@ -49,12 +56,7 @@ Future<void> main() async {
     developer.log('Error opening Hive boxes: $e');
   }
 
-  runApp(
-    UncontrolledProviderScope(
-      container: container,
-      child: const MyApp(),
-    ),
-  );
+  runApp(UncontrolledProviderScope(container: container, child: const MyApp()));
 }
 
 class MyApp extends ConsumerWidget {
@@ -97,7 +99,12 @@ class MyApp extends ConsumerWidget {
         Locale('en', ''), // English
         Locale('pl', ''), // Polish
       ],
-      locale: locale ?? const Locale('en', ''), // Set the locale from the provider, default to English if null
+      locale:
+          locale ??
+          const Locale(
+            'en',
+            '',
+          ), // Set the locale from the provider, default to English if null
       home: const SplashScreen(),
     );
   }

@@ -262,22 +262,21 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
                     if (managedMedicine != null) {
                       final doses =
                           schedulingService.generateDoses(managedMedicine);
-                      if (managedMedicine.doseHistory != null) {
-                        final doseBox = await Hive.openBox<Dose>('doses');
-                        for (final dose in doses) {
-                          await doseBox.add(dose);
-                        }
-                        managedMedicine.doseHistory!.addAll(doses);
-                        await managedMedicine.save();
+                      final doseBox = await Hive.openBox<Dose>('doses');
+                      managedMedicine.doseHistory = HiveList(doseBox);
+                      for (final dose in doses) {
+                        await doseBox.add(dose);
+                        managedMedicine.doseHistory!.add(dose);
+                      }
+                      await managedMedicine.save();
 
-                        for (var dose in managedMedicine.doseHistory!) {
-                          await notificationService.scheduleDoseNotification(
-                            dose.key,
-                            managedMedicine.name,
-                            dose.key,
-                            dose.scheduledTime,
-                          );
-                        }
+                      for (var dose in managedMedicine.doseHistory!) {
+                        await notificationService.scheduleDoseNotification(
+                          dose.key,
+                          managedMedicine.name,
+                          dose.key,
+                          dose.scheduledTime,
+                        );
                       }
                     }
                   } else {
@@ -389,7 +388,7 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
                           onTap: _showImageSourceDialog,
                           child: CircleAvatar(
                             radius: 60,
-                            backgroundColor: Colors.grey[200],
+                            backgroundColor: Colors.grey,
                             backgroundImage: _imageFile != null
                                 ? FileImage(_imageFile!)
                                 : null,
