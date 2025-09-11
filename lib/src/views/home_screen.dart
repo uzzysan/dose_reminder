@@ -9,9 +9,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dose_reminder/l10n/app_localizations.dart';
 
-final medicinesProvider = FutureProvider<List<Medicine>>((ref) {
+final medicinesProvider = StreamProvider<List<Medicine>>((ref) {
   final dbService = ref.watch(databaseServiceProvider);
-  return dbService.getMedicines();
+  return dbService.watchMedicines();
 });
 
 class HomeScreen extends ConsumerWidget {
@@ -66,7 +66,6 @@ class HomeScreen extends ConsumerWidget {
           await Navigator.of(context).push(
             MaterialPageRoute(builder: (context) => const AddEditMedicineScreen()),
           );
-          ref.invalidate(medicinesProvider);
         },
         tooltip: l10n.addMedicine,
         child: const Icon(Icons.add),

@@ -11,7 +11,6 @@ const String takenActionId = 'TAKEN_ACTION';
 const String snoozeActionId = 'SNOOZE_ACTION';
 
 final notificationServiceProvider = Provider<NotificationService>((ref) {
-  // Pass the ref to the service to allow it to read other providers.
   return NotificationService(ref);
 });
 
@@ -24,7 +23,7 @@ class NotificationService {
   Future<void> init() async {
     await _initTimezones();
 
-    const AndroidInitializationSettings androidSettings = 
+    const AndroidInitializationSettings androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
     final DarwinInitializationSettings darwinSettings = DarwinInitializationSettings(
@@ -44,7 +43,7 @@ class NotificationService {
     );
   }
 
-  Future<void> _initTimezones() async { 
+  Future<void> _initTimezones() async {
     tz.initializeTimeZones();
     final String timeZoneName = await FlutterTimezone.getLocalTimezone();
     tz.setLocalLocation(tz.getLocation(timeZoneName));
@@ -54,45 +53,38 @@ class NotificationService {
     if (response.payload == null) return;
 
     final payload = jsonDecode(response.payload!);
-    final medicineKey = payload['medicineKey'] as int;
-    final scheduledTimeString = payload['scheduledTime'] as String;
-    final scheduledTime = DateTime.parse(scheduledTimeString);
+    final doseKey = payload['doseKey'] as int;
 
     final dbService = _ref.read(databaseServiceProvider);
-    final medicine = await dbService.getMedicine(medicineKey);
+    final dose = await dbService.getDose(doseKey);
 
-    if (medicine != null && medicine.doseHistory != null) {
-      final doseIndex = medicine.doseHistory!.indexWhere((d) => d.scheduledTime == scheduledTime);
-      
-      if (doseIndex != -1) {
-        final dose = medicine.doseHistory![doseIndex];
-        switch (response.actionId) {
-          case takenActionId:
-            dose.status = DoseStatus.taken;
-            dose.takenTime = DateTime.now();
-            await dbService.updateDose(dose);
-            break;
-          case snoozeActionId:
-            final snoozedTime = DateTime.now().add(const Duration(minutes: 30));
-            // We need medicine name for the notification body
-            if (medicine != null) {
-              await scheduleDoseNotification(
-                response.id! + 1000000, // Create a new unique ID for the snoozed notification
-                medicine.name,
-                medicineKey,
-                snoozedTime,
-              );
-            }
-            break;
-        }
+    if (dose != null) {
+      switch (response.actionId) {
+        case takenActionId:
+          dose.status = DoseStatus.taken;
+          dose.takenTime = DateTime.now();
+          await dbService.updateDose(dose);
+          break;
+        case snoozeActionId:
+          await cancelNotification(response.id!);
+          final snoozedTime = DateTime.now().add(const Duration(minutes: 30));
+          final medicine = await dbService.getMedicineForDose(doseKey);
+          if (medicine != null) {
+            await scheduleDoseNotification(
+              -dose.key, // Use negative key for snoozed notification to ensure uniqueness
+              medicine.name,
+              dose.key,
+              snoozedTime,
+            );
+          }
+          break;
       }
     }
   }
 
-  Future<void> scheduleDoseNotification(int id, String medicineName, int medicineKey, DateTime scheduledTime) async {
+  Future<void> scheduleDoseNotification(int id, String medicineName, int doseKey, DateTime scheduledTime) async {
     final payload = jsonEncode({
-      'medicineKey': medicineKey,
-      'scheduledTime': scheduledTime.toIso8601String(),
+      'doseKey': doseKey,
     });
 
     final NotificationDetails platformChannelSpecifics = NotificationDetails(
@@ -120,5 +112,9 @@ class NotificationService {
       matchDateTimeComponents: null,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );
+  }
+
+  Future<void> cancelNotification(int id) async {
+    await _plugin.cancel(id);
   }
 }

@@ -14,20 +14,23 @@ class DoseNotifier extends StateNotifier<List<Dose>> {
   final DatabaseService _databaseService;
   final Medicine _medicine;
 
-  Future<void> updateDoseStatus(Dose dose, DoseStatus status) async {
-    dose.status = status;
-    if (status == DoseStatus.taken) {
+  Future<void> updateDoseStatus(Dose dose, DoseStatus newStatus) async {
+    if (newStatus == DoseStatus.taken) {
+      dose.status = DoseStatus.taken;
       dose.takenTime = DateTime.now();
-    }
-    await _databaseService.updateDose(dose);
-
-    if (status == DoseStatus.skipped) {
+      await _databaseService.updateDose(dose);
+    } else if (newStatus == DoseStatus.skipped) {
+      dose.status = DoseStatus.skipped;
+      await _databaseService.updateDose(dose);
+      
       final newDose = _calculateNextDose();
       if (newDose != null) {
         await _databaseService.addDoseToMedicine(_medicine.key, newDose);
       }
     }
-    state = _medicine.doseHistory ?? [];
+    
+    // Create a new list to force the state to update
+    state = List<Dose>.from(_medicine.doseHistory ?? []);
   }
 
   Dose? _calculateNextDose() {

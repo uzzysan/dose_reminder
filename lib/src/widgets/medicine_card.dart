@@ -1,6 +1,7 @@
 import 'package:dose_reminder/src/models/dose.dart';
 import 'package:dose_reminder/src/models/medicine.dart';
 import 'package:dose_reminder/src/views/medicine_details_screen.dart';
+import 'package:dose_reminder/src/views/add_edit_medicine_screen.dart';
 import 'package:dose_reminder/src/widgets/ui/app_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -40,7 +41,22 @@ class MedicineCard extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(medicine.name, style: Theme.of(context).textTheme.titleLarge),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(medicine.name, style: Theme.of(context).textTheme.titleLarge),
+              IconButton(
+                icon: const Icon(Icons.edit),
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => AddEditMedicineScreen(medicine: medicine),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
           const SizedBox(height: 8),
           // Show dose progress if there are any doses in the cycle
           if (totalDoses > 0) 

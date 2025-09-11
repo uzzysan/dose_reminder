@@ -31,6 +31,15 @@ class DatabaseService {
     return box.values.toList();
   }
 
+  Stream<List<Medicine>> watchMedicines() async* {
+    final box = await Hive.openBox<Medicine>(medicineBoxName);
+    yield box.values.toList();
+
+    await for (final _ in box.watch()) {
+      yield box.values.toList();
+    }
+  }
+
   Future<Medicine?> getMedicine(int key) async {
     final box = await Hive.openBox<Medicine>(medicineBoxName);
     return box.get(key);
@@ -43,6 +52,21 @@ class DatabaseService {
 
   Future<void> updateDose(Dose dose) async {
     await dose.save();
+  }
+
+  Future<Dose?> getDose(int key) async {
+    final box = await Hive.openBox<Dose>(doseBoxName);
+    return box.get(key);
+  }
+
+  Future<Medicine?> getMedicineForDose(int doseKey) async {
+    final medicineBox = await Hive.openBox<Medicine>(medicineBoxName);
+    for (var medicine in medicineBox.values) {
+      if (medicine.doseHistory?.any((dose) => dose.key == doseKey) ?? false) {
+        return medicine;
+      }
+    }
+    return null;
   }
 
   Future<void> addDoseToMedicine(dynamic medicineKey, Dose dose) async {

@@ -14,7 +14,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:dose_reminder/l10n/app_localizations.dart';
 class AddEditMedicineScreen extends ConsumerStatefulWidget {
-  const AddEditMedicineScreen({super.key});
+  const AddEditMedicineScreen({super.key, this.medicine});
+
+  final Medicine? medicine;
 
   @override
   ConsumerState<AddEditMedicineScreen> createState() =>
@@ -35,6 +37,22 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
   int? _durationInDays;
   DateTime _startDateTime = DateTime.now();
   RangeValues _preferredHours = const RangeValues(7, 21);
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.medicine != null) {
+      _name = widget.medicine!.name;
+      _imageFile = widget.medicine!.photoPath != null ? File(widget.medicine!.photoPath!) : null;
+      _frequencyType = widget.medicine!.frequencyType;
+      _timesPerDay = widget.medicine!.timesPerDay;
+      _everyXDays = widget.medicine!.everyXDays;
+      _weeklyFrequency.addAll(widget.medicine!.weeklyFrequency ?? []);
+      _durationInDays = widget.medicine!.durationInDays;
+      _startDateTime = widget.medicine!.startDateTime;
+      _preferredHours = RangeValues(widget.medicine!.preferredStartHour.toDouble(), widget.medicine!.preferredEndHour.toDouble());
+    }
+  }
 
   Future<void> _pickImage(ImageSource source) async {
     final pickedFile = await _imagePicker.pickImage(source: source);
@@ -216,7 +234,7 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
                 final l10n = AppLocalizations.of(context)!;
 
                 try {
-                  final dbService = ref.read(databaseServiceProvider);
+                                    final dbService = ref.read(databaseServiceProvider);
                   final schedulingService =
                       ref.read(schedulingServiceProvider);
                   final notificationService =
@@ -235,29 +253,94 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
                     preferredEndHour: _preferredHours.end.round(),
                   );
 
-                  final medicineKey = await dbService.addMedicine(newMedicine);
-                  final managedMedicine =
-                      await dbService.getMedicine(medicineKey);
+                  if (widget.medicine == null) {
+                    // Adding new medicine
+                    final medicineKey = await dbService.addMedicine(newMedicine);
+                    final managedMedicine =
+                        await dbService.getMedicine(medicineKey);
 
-                  if (managedMedicine != null) {
-                    final doses =
-                        schedulingService.generateDoses(managedMedicine);
-                    if (managedMedicine.doseHistory != null) {
-                      final doseBox = await Hive.openBox<Dose>('doses');
-                      for (final dose in doses) {
-                        await doseBox.add(dose);
+                    if (managedMedicine != null) {
+                      final doses =
+                          schedulingService.generateDoses(managedMedicine);
+                      if (managedMedicine.doseHistory != null) {
+                        final doseBox = await Hive.openBox<Dose>('doses');
+                        for (final dose in doses) {
+                          await doseBox.add(dose);
+                        }
+                        managedMedicine.doseHistory!.addAll(doses);
+                        await managedMedicine.save();
+
+                        for (var dose in managedMedicine.doseHistory!) {
+                          await notificationService.scheduleDoseNotification(
+                            dose.key,
+                            managedMedicine.name,
+                            dose.key,
+                            dose.scheduledTime,
+                          );
+                        }
                       }
-                      managedMedicine.doseHistory!.addAll(doses);
-                      await managedMedicine.save();
+                    }
+                  } else {
+                    // Editing existing medicine
+                    final oldMedicine = widget.medicine!;
 
-                      for (var dose in managedMedicine.doseHistory!) {
-                        final notificationId = dose.scheduledTime
-                            .millisecondsSinceEpoch
-                            .remainder(100000);
+                    // Preserve past doses
+                    final preservedDoses = oldMedicine.doseHistory
+                            ?.where((d) =>
+                                d.status == DoseStatus.taken ||
+                                d.status == DoseStatus.skipped)
+                            .toList() ??
+                        [];
+
+                    // Cancel future notifications for old schedule
+                    for (var dose in oldMedicine.doseHistory ?? []) {
+                      if (dose.status == DoseStatus.pending &&
+                          dose.scheduledTime.isAfter(DateTime.now())) {
+                        await notificationService.cancelNotification(dose.key);
+                      }
+                    }
+
+                    // Generate new doses
+                    final newGeneratedDoses =
+                        schedulingService.generateDoses(newMedicine);
+
+                    // Combine preserved doses with new future doses
+                    final combinedDoses = <Dose>[];
+                    combinedDoses.addAll(preservedDoses);
+                    combinedDoses.addAll(newGeneratedDoses.where((d) =>
+                        d.scheduledTime.isAfter(DateTime.now()) &&
+                        !preservedDoses.any((pd) =>
+                            pd.scheduledTime == d.scheduledTime))); // Avoid duplicates
+
+                    // Update the existing medicine object
+                    oldMedicine.name = newMedicine.name;
+                    oldMedicine.photoPath = newMedicine.photoPath;
+                    oldMedicine.frequencyType = newMedicine.frequencyType;
+                    oldMedicine.timesPerDay = newMedicine.timesPerDay;
+                    oldMedicine.everyXDays = newMedicine.everyXDays;
+                    oldMedicine.weeklyFrequency = newMedicine.weeklyFrequency;
+                    oldMedicine.durationInDays = newMedicine.durationInDays;
+                    oldMedicine.startDateTime = newMedicine.startDateTime;
+                    oldMedicine.preferredStartHour = newMedicine.preferredStartHour;
+                    oldMedicine.preferredEndHour = newMedicine.preferredEndHour;
+
+                    // Clear old dose history and add combined doses
+                    oldMedicine.doseHistory?.clear();
+                    final doseBox = await Hive.openBox<Dose>('doses');
+                    for (final dose in combinedDoses) {
+                      await doseBox.add(dose);
+                    }
+                    oldMedicine.doseHistory?.addAll(combinedDoses);
+                    await oldMedicine.save();
+
+                    // Schedule notifications for new future doses
+                    for (var dose in combinedDoses) {
+                      if (dose.status == DoseStatus.pending &&
+                          dose.scheduledTime.isAfter(DateTime.now())) {
                         await notificationService.scheduleDoseNotification(
-                          notificationId,
-                          managedMedicine.name,
-                          medicineKey,
+                          dose.key,
+                          oldMedicine.name,
+                          dose.key,
                           dose.scheduledTime,
                         );
                       }
