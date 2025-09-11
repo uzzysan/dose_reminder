@@ -183,4 +183,10 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get failedToSaveMedicine => 'Nie udało się zapisać leku';
+
+  @override
+  String get daily => 'Codziennie';
+
+  @override
+  String get weekly => 'Tygodniowo';
 }
