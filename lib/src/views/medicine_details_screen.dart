@@ -1,8 +1,10 @@
+import 'dart:io';
 import 'package:dose_reminder/src/models/dose.dart';
 import 'package:dose_reminder/src/models/medicine.dart';
 import 'package:dose_reminder/src/providers/dose_provider.dart';
 import 'package:dose_reminder/src/widgets/ui/background_logo.dart';
 import 'package:dose_reminder/src/widgets/scaffold_with_banner.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -20,7 +22,22 @@ class MedicineDetailsScreen extends ConsumerWidget {
 
     return ScaffoldWithBanner(
       appBar: AppBar(
-        title: Text(medicine.name),
+        title: Row(
+          children: [
+            if (medicine.photoPath != null && medicine.photoPath!.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: CircleAvatar(
+                  radius: 20,
+                  backgroundImage: _getImageProvider(medicine.photoPath!),
+                  backgroundColor: Colors.grey[300],
+                ),
+              ),
+            Expanded(
+              child: Text(medicine.name, overflow: TextOverflow.ellipsis),
+            ),
+          ],
+        ),
       ),
       body: Stack(
         children: [
@@ -78,5 +95,15 @@ class MedicineDetailsScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  ImageProvider _getImageProvider(String photoPath) {
+    if (kIsWeb) {
+      // For web, photoPath is likely a blob URL
+      return NetworkImage(photoPath);
+    } else {
+      // For mobile, photoPath is a file path
+      return FileImage(File(photoPath));
+    }
   }
 }

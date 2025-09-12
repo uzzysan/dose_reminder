@@ -1,4 +1,5 @@
 import 'package:dose_reminder/src/models/medicine.dart';
+import 'package:dose_reminder/src/providers/medicine_provider.dart';
 import 'package:dose_reminder/src/providers/settings_provider.dart';
 import 'package:dose_reminder/src/services/database_service.dart';
 import 'package:dose_reminder/src/views/add_edit_medicine_screen.dart';
@@ -9,11 +10,6 @@ import 'package:dose_reminder/src/widgets/ui/background_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dose_reminder/l10n/app_localizations.dart';
-
-final medicinesProvider = StreamProvider<List<Medicine>>((ref) {
-  final dbService = ref.watch(databaseServiceProvider);
-  return dbService.watchMedicines();
-});
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
