@@ -2,6 +2,7 @@ import 'package:dose_reminder/src/models/dose.dart';
 import 'package:dose_reminder/src/models/medicine.dart';
 import 'package:dose_reminder/src/providers/dose_provider.dart';
 import 'package:dose_reminder/src/widgets/ui/background_logo.dart';
+import 'package:dose_reminder/src/widgets/scaffold_with_banner.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -17,7 +18,7 @@ class MedicineDetailsScreen extends ConsumerWidget {
     final schedule = ref.watch(doseProvider(medicine));
     final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
+    return ScaffoldWithBanner(
       appBar: AppBar(
         title: Text(medicine.name),
       ),

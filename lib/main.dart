@@ -5,6 +5,7 @@ import 'package:dose_reminder/src/services/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:dose_reminder/l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:dose_reminder/src/views/splash_screen.dart';
@@ -54,6 +55,15 @@ Future<void> main() async {
     developer.log('Dose box opened successfully');
   } catch (e) {
     developer.log('Error opening Hive boxes: $e');
+  // Initialize Mobile Ads
+  try {
+    await MobileAds.instance.initialize();
+    developer.log('MobileAds initialized successfully');
+  } catch (e) {
+    developer.log('Error initializing MobileAds: $e');
+  }
+
+  runApp(UncontrolledProviderScope(container: container, child: const MyApp()));
   }
 
   runApp(UncontrolledProviderScope(container: container, child: const MyApp()));
