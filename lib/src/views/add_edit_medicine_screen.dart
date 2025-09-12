@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:dose_reminder/src/models/dose.dart';
 import 'package:dose_reminder/src/models/medicine.dart';
+import 'package:dose_reminder/src/providers/medicine_provider.dart';
 import 'package:dose_reminder/src/services/database_service.dart';
 import 'package:dose_reminder/src/services/notification_service.dart';
 import 'package:dose_reminder/src/services/scheduling_service.dart';
@@ -11,9 +12,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 import 'package:dose_reminder/src/widgets/scaffold_with_banner.dart';
+import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:dose_reminder/l10n/app_localizations.dart';
+
 class AddEditMedicineScreen extends ConsumerStatefulWidget {
   const AddEditMedicineScreen({super.key, this.medicine});
 
@@ -28,6 +31,7 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
   final _formKey = GlobalKey<FormState>();
   final _imagePicker = ImagePicker();
 
+  String? _photoPath; // Store photo path for both mobile and web
   // Form state variables
   String _name = '';
   File? _imageFile;
@@ -43,8 +47,17 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
   void initState() {
     super.initState();
     if (widget.medicine != null) {
+      _photoPath = widget.medicine!.photoPath;
       _name = widget.medicine!.name;
-      _imageFile = widget.medicine!.photoPath != null ? File(widget.medicine!.photoPath!) : null;
+      // Don't try to create File on web - just keep photoPath reference
+      if (!kIsWeb && widget.medicine!.photoPath != null) {
+        try {
+          _imageFile = File(widget.medicine!.photoPath!);
+        } catch (e) {
+          // If file doesn't exist or path is invalid, keep _imageFile as null
+          _imageFile = null;
+        }
+      }
       _frequencyType = widget.medicine!.frequencyType;
       _timesPerDay = widget.medicine!.timesPerDay;
       _everyXDays = widget.medicine!.everyXDays;
@@ -58,9 +71,17 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
   Future<void> _pickImage(ImageSource source) async {
     final pickedFile = await _imagePicker.pickImage(source: source);
     if (pickedFile != null) {
-      setState(() {
-        _imageFile = File(pickedFile.path);
-      });
+      print('DEBUG: Picked image: ${pickedFile.path}');
+      if (kIsWeb) {
+        // On web, pickedFile.path is a blob URL - we don't need File object
+        setState(() {
+          _imageFile = null; // Clear any previous File reference
+        });
+      } else {
+        setState(() {
+          _imageFile = File(pickedFile.path);
+        });
+      }
     }
   }
 
@@ -244,9 +265,10 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
                   final notificationService =
                       ref.read(notificationServiceProvider);
 
+                  print('DEBUG: Creating medicine with photoPath: ${_imageFile?.path ?? widget.medicine?.photoPath}');
                   final newMedicine = Medicine(
                     name: _name,
-                    photoPath: _imageFile?.path,
+                    photoPath: _imageFile?.path ?? widget.medicine?.photoPath,
                     frequencyType: _frequencyType!,
                     timesPerDay: _timesPerDay,
                     everyXDays: _everyXDays,
@@ -273,6 +295,7 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
                         managedMedicine.doseHistory!.add(dose);
                       }
                       await managedMedicine.save();
+                      ref.invalidate(medicinesProvider);
 
                        print('DEBUG: Scheduling notifications for new medicine doses');
                       for (var dose in managedMedicine.doseHistory!) {
@@ -288,7 +311,7 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
                     // Editing existing medicine
                     final oldMedicine = widget.medicine!;
 
-                    // Preserve past doses
+                    // Preserve past doses (already in box)
                     final preservedDoses = oldMedicine.doseHistory
                             ?.where((d) =>
                                 d.status == DoseStatus.taken ||
@@ -296,25 +319,28 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
                             .toList() ??
                         [];
 
-                    // Cancel future notifications for old schedule
-                    for (var dose in oldMedicine.doseHistory ?? []) {
-                      if (dose.status == DoseStatus.pending &&
-                          dose.scheduledTime.isAfter(DateTime.now())) {
-                        await notificationService.cancelNotification(dose.key);
-                      }
+                    final doseBox = await Hive.openBox<Dose>('doses');
+
+                    // Create a list of doses to delete
+                    final dosesToDelete = oldMedicine.doseHistory
+                            ?.where((d) => d.status == DoseStatus.pending)
+                            .toList() ??
+                        [];
+
+                    // Cancel notifications and delete old pending doses
+                    for (var dose in dosesToDelete) {
+                      await notificationService.cancelNotification(dose.key);
+                      await dose.delete();
                     }
 
-                    // Generate new doses
+                    // Generate new doses (these are not in a box yet)
                     final newGeneratedDoses =
                         schedulingService.generateDoses(newMedicine);
 
-                    // Combine preserved doses with new future doses
-                    final combinedDoses = <Dose>[];
-                    combinedDoses.addAll(preservedDoses);
-                    combinedDoses.addAll(newGeneratedDoses.where((d) =>
-                        d.scheduledTime.isAfter(DateTime.now()) &&
-                        !preservedDoses.any((pd) =>
-                            pd.scheduledTime == d.scheduledTime))); // Avoid duplicates
+                    // Add the new doses to the box
+                    for (final dose in newGeneratedDoses) {
+                      await doseBox.add(dose);
+                    }
 
                     // Update the existing medicine object
                     oldMedicine.name = newMedicine.name;
@@ -325,25 +351,21 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
                     oldMedicine.weeklyFrequency = newMedicine.weeklyFrequency;
                     oldMedicine.durationInDays = newMedicine.durationInDays;
                     oldMedicine.startDateTime = newMedicine.startDateTime;
-                    oldMedicine.preferredStartHour = newMedicine.preferredStartHour;
+                    oldMedicine.preferredStartHour =
+                        newMedicine.preferredStartHour;
                     oldMedicine.preferredEndHour = newMedicine.preferredEndHour;
 
-                    // Clear old dose history and add combined doses
+                    // Reconstruct the dose history
                     oldMedicine.doseHistory?.clear();
-                    final doseBox = await Hive.openBox<Dose>('doses');
-                    for (final dose in combinedDoses) {
-                      await doseBox.add(dose);
-                     print('DEBUG: Saving updated medicine to database');
-                    }
-                    oldMedicine.doseHistory?.addAll(combinedDoses);
-                     await oldMedicine.save();
-                     print('DEBUG: Medicine saved successfully, scheduling new notifications');
-                    await oldMedicine.save();
+                    oldMedicine.doseHistory?.addAll(preservedDoses);
+                    oldMedicine.doseHistory?.addAll(newGeneratedDoses);
+
+                    await oldMedicine.save(); // Save the parent object
+                    ref.invalidate(medicinesProvider);
 
                     // Schedule notifications for new future doses
-                    for (var dose in combinedDoses) {
-                      if (dose.status == DoseStatus.pending &&
-                          dose.scheduledTime.isAfter(DateTime.now())) {
+                    for (var dose in newGeneratedDoses) {
+                      if (dose.scheduledTime.isAfter(DateTime.now())) {
                         await notificationService.scheduleDoseNotification(
                           dose.key,
                           oldMedicine.name,
@@ -398,9 +420,11 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
                             radius: 60,
                             backgroundColor: Colors.grey,
                             backgroundImage: _imageFile != null
-                                ? FileImage(_imageFile!)
-                                : null,
-                            child: _imageFile == null
+                                ? _getImageProvider(_imageFile!.path)
+                                : widget.medicine?.photoPath != null
+                                    ? _getImageProvider(widget.medicine!.photoPath!)
+                                    : null,
+                            child: (_imageFile == null && widget.medicine?.photoPath == null)
                                 ? const Icon(
                                     Icons.camera_alt,
                                     size: 50,
@@ -565,5 +589,15 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
         ],
       ),
     );
+  }
+
+  ImageProvider _getImageProvider(String photoPath) {
+    if (kIsWeb) {
+      // For web, photoPath is likely a blob URL
+      return NetworkImage(photoPath);
+    } else {
+      // For mobile, photoPath is a file path
+      return FileImage(File(photoPath));
+    }
   }
 }
