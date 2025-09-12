@@ -3,6 +3,7 @@ import 'package:dose_reminder/src/providers/settings_provider.dart';
 import 'package:dose_reminder/src/services/database_service.dart';
 import 'package:dose_reminder/src/views/add_edit_medicine_screen.dart';
 import 'package:dose_reminder/src/views/settings_screen.dart';
+import 'package:dose_reminder/src/widgets/scaffold_with_banner.dart';
 import 'package:dose_reminder/src/widgets/medicine_card.dart';
 import 'package:dose_reminder/src/widgets/ui/background_logo.dart';
 import 'package:flutter/material.dart';
@@ -22,7 +23,7 @@ class HomeScreen extends ConsumerWidget {
     final medicinesAsyncValue = ref.watch(medicinesProvider);
     final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
+    return ScaffoldWithBanner(
       appBar: AppBar(
         title: Text(l10n.yourMedicines),
         centerTitle: true,

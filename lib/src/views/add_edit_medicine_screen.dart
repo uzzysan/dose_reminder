@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
+import 'package:dose_reminder/src/widgets/scaffold_with_banner.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:dose_reminder/l10n/app_localizations.dart';
@@ -221,7 +222,7 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Scaffold(
+    return ScaffoldWithBanner(
       appBar: AppBar(
         title: Text(l10n.addMedicine),
         actions: [
