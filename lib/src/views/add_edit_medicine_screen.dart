@@ -328,9 +328,13 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
                         [];
 
                     // Cancel notifications and delete old pending doses
-                    for (var dose in dosesToDelete) {
-                      await notificationService.cancelNotification(dose.key);
-                      await dose.delete();
+                    try {
+                      for (var dose in dosesToDelete) {
+                        await notificationService.cancelNotification(dose.key);
+                        await dose.delete();
+                      }
+                    } catch (e) {
+                      // Ignore notification errors during editing
                     }
 
                     // Generate new doses (these are not in a box yet)
@@ -364,15 +368,19 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
                     ref.invalidate(medicinesProvider);
 
                     // Schedule notifications for new future doses
-                    for (var dose in newGeneratedDoses) {
-                      if (dose.scheduledTime.isAfter(DateTime.now())) {
-                        await notificationService.scheduleDoseNotification(
-                          dose.key,
-                          oldMedicine.name,
-                          dose.key,
-                          dose.scheduledTime,
-                        );
+                    try {
+                      for (var dose in newGeneratedDoses) {
+                        if (dose.scheduledTime.isAfter(DateTime.now().add(Duration(minutes: 1)))) {
+                          await notificationService.scheduleDoseNotification(
+                            dose.key,
+                            oldMedicine.name,
+                            dose.key,
+                            dose.scheduledTime,
+                          );
+                        }
                       }
+                    } catch (e) {
+                      // Ignore notification errors during editing
                     }
                   }
                   scaffoldMessenger.showSnackBar(
