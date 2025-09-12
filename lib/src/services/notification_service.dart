@@ -96,6 +96,7 @@ class NotificationService {
   }
 
   Future<void> scheduleDoseNotification(int id, String medicineName, int doseKey, DateTime scheduledTime) async {
+    print('DEBUG: Scheduling notification for dose $doseKey at $scheduledTime (id: $id)');
     final payload = jsonEncode({
       'doseKey': doseKey,
     });
@@ -115,16 +116,20 @@ class NotificationService {
       iOS: const DarwinNotificationDetails(categoryIdentifier: 'doseCategory'),
     );
 
+    final zonedTime = tz.TZDateTime.from(scheduledTime, tz.local);
+    print('DEBUG: Zoned time: $zonedTime, now: ${tz.TZDateTime.now(tz.local)}');
+
     await _plugin.zonedSchedule(
       id,
       'Time for your dose!',
       'It\'s time to take your $medicineName.',
-      tz.TZDateTime.from(scheduledTime, tz.local),
+      zonedTime,
       platformChannelSpecifics,
       payload: payload,
       matchDateTimeComponents: null,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );
+    print('DEBUG: Notification scheduled successfully for dose $doseKey');
   }
 
   Future<void> cancelNotification(int id) async {

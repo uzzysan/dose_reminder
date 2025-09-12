@@ -182,6 +182,7 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
           decoration: InputDecoration(labelText: l10n.timesPerDay),
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          initialValue: _timesPerDay?.toString(),
           validator: (value) {
             if (value == null || value.isEmpty) {
               return l10n.pleaseEnterHowManyTimesPerDay;
@@ -198,6 +199,7 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
           decoration: InputDecoration(labelText: l10n.everyXDays),
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          initialValue: _everyXDays?.toString(),
           validator: (value) {
             if (value == null || value.isEmpty) {
               return l10n.pleaseEnterTheIntervalInDays;
@@ -226,6 +228,7 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
           IconButton(
             icon: const Icon(Icons.save),
             onPressed: () async {
+              print('DEBUG: Save button pressed, validating form');
               if (_formKey.currentState!.validate()) {
                 _formKey.currentState!.save();
 
@@ -270,6 +273,7 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
                       }
                       await managedMedicine.save();
 
+                       print('DEBUG: Scheduling notifications for new medicine doses');
                       for (var dose in managedMedicine.doseHistory!) {
                         await notificationService.scheduleDoseNotification(
                           dose.key,
@@ -328,8 +332,11 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
                     final doseBox = await Hive.openBox<Dose>('doses');
                     for (final dose in combinedDoses) {
                       await doseBox.add(dose);
+                     print('DEBUG: Saving updated medicine to database');
                     }
                     oldMedicine.doseHistory?.addAll(combinedDoses);
+                     await oldMedicine.save();
+                     print('DEBUG: Medicine saved successfully, scheduling new notifications');
                     await oldMedicine.save();
 
                     // Schedule notifications for new future doses
@@ -407,6 +414,7 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
                             labelText: l10n.medicineName,
                             border: const OutlineInputBorder(),
                           ),
+                          initialValue: _name,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return l10n.pleaseEnterAMedicineName;
@@ -470,6 +478,7 @@ class _AddEditMedicineScreenState extends ConsumerState<AddEditMedicineScreen> {
                           ),
                           keyboardType: TextInputType.number,
                           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                          initialValue: _durationInDays?.toString(),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return l10n.pleaseEnterTheDuration;
